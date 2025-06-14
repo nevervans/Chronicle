@@ -227,20 +227,22 @@ export function GameBoard() {
         {/* Submit Button */}
         <div className="text-center mb-8">
           {gameAlreadyCompleted ? (
-            <div className="text-center">
-              <p className="text-gray-400 mb-4">You've already played today!</p>
-              <p className="text-sm text-gray-500 mb-4">
-                Result: {todaysResult?.won ? `Solved in ${todaysResult.attempts} attempts` : 'Not solved'}
-              </p>
+            <div className="text-center space-y-4">
+              <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm">
+                <p className="text-gray-300 mb-2 font-medium">You've already played today!</p>
+                <p className="text-sm text-gray-500">
+                  Result: {todaysResult?.won ? `Solved in ${todaysResult.attempts} attempts` : 'Not solved'}
+                </p>
+              </div>
               <button
                 onClick={() => setShowResultModal(true)}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-3 rounded transition-colors mb-3"
+                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg mb-3"
               >
                 View Today's Result
               </button>
               <button
                 onClick={() => setShowStatsModal(true)}
-                className="w-full bg-green-400 hover:bg-green-500 text-black font-semibold py-3 rounded transition-colors"
+                className="w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-black font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl"
               >
                 View Statistics
               </button>
@@ -249,9 +251,9 @@ export function GameBoard() {
             <button
               onClick={handleSubmit}
               disabled={gameState.gameComplete}
-              className="w-full bg-green-400 hover:bg-green-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-black disabled:text-gray-500 font-semibold py-3 rounded transition-colors"
+              className="w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-black disabled:text-gray-500 font-bold py-5 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl text-lg"
             >
-              {gameState.gameComplete ? 'Game Complete' : 'Submit'}
+              {gameState.gameComplete ? 'Game Complete' : 'Submit Timeline'}
             </button>
           )}
         </div>

@@ -42,11 +42,11 @@ export function ResultModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 border border-gray-700 rounded-lg max-w-md w-full p-6">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-gray-800/95 border border-gray-700/50 rounded-2xl max-w-md w-full p-8 shadow-2xl backdrop-blur-sm animate-fade-in-up">
         <div className="text-center">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-            won ? 'bg-green-400' : 'bg-gray-600'
+          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl ${
+            won ? 'bg-gradient-to-br from-green-400 to-green-500' : 'bg-gradient-to-br from-gray-600 to-gray-700'
           }`}>
             <div className={`text-2xl ${won ? 'text-black' : 'text-gray-300'}`}>
               {won ? '✓' : '✗'}
