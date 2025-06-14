@@ -95,7 +95,9 @@ The application follows a monorepo structure with separate client and server dir
 - **Data**: Historical events stored as JSON and loaded into database
 
 ## Changelog
-- June 14, 2025. Initial setup
+- June 14, 2025: Initial setup with React frontend and Express backend
+- June 14, 2025: Redesigned to Wordle-style minimalist black UI with vertical event layout
+- June 14, 2025: Added PostgreSQL database integration with 150+ historical events
 
 ## User Preferences
 
