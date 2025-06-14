@@ -32,19 +32,7 @@ export function GameBoard() {
     select: (data: any) => data.events as GameEvent[]
   });
 
-  useEffect(() => {
-    if (dailyEvents) {
-      setGameState(prev => ({
-        ...prev,
-        currentEvents: dailyEvents,
-        gameDate: new Date().toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })
-      }));
-    }
-  }, [dailyEvents]);
+
 
   const handleDragStart = (e: React.DragEvent, event: GameEvent, sourceIndex: number) => {
     setDraggedItem({ event, sourceIndex });
