@@ -5,7 +5,7 @@ import { AttemptsIndicator } from "./AttemptsIndicator";
 import { StatsModal } from "./StatsModal";
 import { ResultModal } from "./ResultModal";
 import { checkTimelineCorrect, getCorrectOrder, isTimelineFull } from "@/lib/gameLogic";
-import { updateStats, loadStats } from "@/lib/storage";
+import { updateStats, loadStats, hasPlayedToday, getTodaysResult, generateShareText } from "@/lib/storage";
 import { useQuery } from "@tanstack/react-query";
 
 export function GameBoard() {
@@ -148,7 +148,12 @@ export function GameBoard() {
               onClick={() => setShowStatsModal(true)}
               className="p-2 hover:bg-gray-800 rounded transition-colors"
             >
-              <span className="text-xl">📊</span>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                <rect x="2" y="12" width="3" height="6" rx="1"/>
+                <rect x="6" y="8" width="3" height="10" rx="1"/>
+                <rect x="10" y="5" width="3" height="13" rx="1"/>
+                <rect x="14" y="9" width="3" height="9" rx="1"/>
+              </svg>
             </button>
           </div>
         </div>

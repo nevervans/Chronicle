@@ -30,8 +30,7 @@ export function EventTile({
       onDragStart={(e) => onDragStart(e, event, index)}
       onDragEnd={onDragEnd}
     >
-      <div className="text-sm font-semibold mb-1">{event.name}</div>
-      <div className="text-xs text-gray-400">{event.year}</div>
+      <div className="text-sm font-semibold text-gray-100">{event.name}</div>
     </div>
   );
 }
