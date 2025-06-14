@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { GameState, GameEvent, DragItem, GameStats } from "@/types/game";
-import { TimelineSlot } from "./TimelineSlot";
-import { EventCard } from "./EventCard";
+import { EventTile } from "./EventTile";
+import { AttemptsIndicator } from "./AttemptsIndicator";
 import { StatsModal } from "./StatsModal";
 import { ResultModal } from "./ResultModal";
 import { checkTimelineCorrect, getCorrectOrder, isTimelineFull } from "@/lib/gameLogic";
@@ -19,8 +19,8 @@ export function GameBoard() {
     gameDate: new Date().toDateString()
   });
 
-  const [draggedItem, setDraggedItem] = useState<DragItem | null>(null);
-  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
+  const [draggedItem, setDraggedItem] = useState<{ event: GameEvent; sourceIndex: number } | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [stats, setStats] = useState<GameStats>(loadStats());
@@ -46,53 +46,36 @@ export function GameBoard() {
     }
   }, [dailyEvents]);
 
-  const handleDragStart = (e: React.DragEvent, event: GameEvent) => {
-    const timelineIndex = gameState.timelineOrder.findIndex(item => item?.name === event.name);
-    
-    setDraggedItem({
-      eventName: event.name,
-      sourceType: timelineIndex !== -1 ? 'timeline' : 'pool',
-      sourceIndex: timelineIndex !== -1 ? timelineIndex : undefined
-    });
-    
+  const handleDragStart = (e: React.DragEvent, event: GameEvent, sourceIndex: number) => {
+    setDraggedItem({ event, sourceIndex });
     e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragEnd = () => {
     setDraggedItem(null);
-    setDragOverSlot(null);
+    setDragOverIndex(null);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(targetIndex);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragOverSlot(null);
-    }
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
   };
 
-  const handleDrop = (e: React.DragEvent, slotIndex: number) => {
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
-    setDragOverSlot(null);
+    setDragOverIndex(null);
 
-    if (!draggedItem) return;
-
-    const event = gameState.currentEvents.find(ev => ev.name === draggedItem.eventName);
-    if (!event) return;
+    if (!draggedItem || draggedItem.sourceIndex === targetIndex) return;
 
     setGameState(prev => {
       const newTimelineOrder = [...prev.timelineOrder];
-      
-      // Remove from previous position if it was in timeline
-      if (draggedItem.sourceType === 'timeline' && draggedItem.sourceIndex !== undefined) {
-        newTimelineOrder[draggedItem.sourceIndex] = null;
-      }
-      
-      // Place in new position
-      newTimelineOrder[slotIndex] = event;
+      const [movedEvent] = newTimelineOrder.splice(draggedItem.sourceIndex, 1);
+      newTimelineOrder.splice(targetIndex, 0, movedEvent);
       
       return {
         ...prev,
@@ -101,13 +84,25 @@ export function GameBoard() {
     });
   };
 
-  const handleSlotDragOver = (e: React.DragEvent, slotIndex: number) => {
-    handleDragOver(e);
-    setDragOverSlot(slotIndex);
-  };
+  useEffect(() => {
+    if (dailyEvents && dailyEvents.length === 6) {
+      // Initialize timeline with shuffled events
+      const shuffled = [...dailyEvents].sort(() => Math.random() - 0.5);
+      setGameState(prev => ({
+        ...prev,
+        currentEvents: dailyEvents,
+        timelineOrder: shuffled,
+        gameDate: new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })
+      }));
+    }
+  }, [dailyEvents]);
 
   const handleSubmit = () => {
-    if (gameState.gameComplete || !isTimelineFull(gameState.timelineOrder)) return;
+    if (gameState.gameComplete) return;
 
     const newAttempts = gameState.attempts + 1;
     const isCorrect = checkTimelineCorrect(gameState.timelineOrder);
@@ -122,7 +117,7 @@ export function GameBoard() {
         gameWon: true,
         gameComplete: true
       }));
-      setTimeout(() => setShowResultModal(true), 800);
+      setTimeout(() => setShowResultModal(true), 600);
     } else if (newAttempts >= gameState.maxAttempts) {
       // Game over condition
       const newStats = updateStats(false, newAttempts);
@@ -132,140 +127,100 @@ export function GameBoard() {
         attempts: newAttempts,
         gameComplete: true
       }));
-      setTimeout(() => setShowResultModal(true), 500);
+      setTimeout(() => setShowResultModal(true), 400);
     } else {
       // Wrong answer - shake animation
       setGameState(prev => ({ ...prev, attempts: newAttempts }));
       setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 500);
+      setTimeout(() => setIsShaking(false), 400);
     }
   };
-
-  const availableEvents = gameState.currentEvents.filter(event => 
-    !gameState.timelineOrder.some(item => item?.name === event.name)
-  );
 
   const correctOrder = getCorrectOrder(gameState.currentEvents);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading today's timeline...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading today's timeline...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900 text-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <header className="border-b border-gray-700 py-4">
+        <div className="max-w-lg mx-auto px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm">⏰</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-800">Chronicle</h1>
-            </div>
+            <h1 className="text-2xl font-bold">Chronicle</h1>
             <button
               onClick={() => setShowStatsModal(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-800 rounded transition-colors"
             >
-              <span className="text-gray-600">📊</span>
-              <span className="text-gray-700 font-medium">Stats</span>
+              <span className="text-xl">📊</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Game */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Game Status */}
+      <main className="max-w-lg mx-auto px-4 py-8">
+        {/* Game Info */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-4 mb-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-primary-500">📅</span>
-              <span className="text-gray-600 font-medium">{gameState.gameDate}</span>
-            </div>
-            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-            <div className="flex items-center space-x-2">
-              <span className="text-primary-500">🎯</span>
-              <span className="text-gray-600 font-medium">
-                Attempts: <span className="text-primary-600 font-semibold">{gameState.attempts}</span>/5
-              </span>
-            </div>
-          </div>
-          <p className="text-gray-500 text-sm max-w-2xl mx-auto">
-            Arrange these 6 historical events in chronological order from earliest to latest. You have 5 attempts to get it right!
+          <p className="text-gray-400 text-sm mb-2">{gameState.gameDate}</p>
+          <p className="text-gray-300 text-sm mb-6">
+            Arrange 6 historical events in chronological order
           </p>
+          
+          {/* Attempts Indicator */}
+          <AttemptsIndicator 
+            currentAttempts={gameState.attempts} 
+            maxAttempts={gameState.maxAttempts} 
+          />
         </div>
 
-        {/* Game Board */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="text-primary-500 mr-2">⏱️</span>
-              Historical Timeline
-            </h2>
-            
-            {/* Timeline Slots */}
-            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 ${
-              isShaking ? 'animate-shake' : ''
-            }`}>
-              {gameState.timelineOrder.map((event, index) => (
-                <TimelineSlot
-                  key={index}
+        {/* Event Timeline - Vertical Layout */}
+        <div className={`space-y-3 mb-8 ${isShaking ? 'animate-shake' : ''}`}>
+          {gameState.timelineOrder.map((event, index) => (
+            <div
+              key={index}
+              className={`drop-zone min-h-[60px] rounded p-1 ${
+                dragOverIndex === index ? 'drag-over' : ''
+              }`}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+            >
+              {event ? (
+                <EventTile
                   event={event}
                   index={index}
-                  onDrop={handleDrop}
-                  onDragOver={(e) => handleSlotDragOver(e, index)}
-                  onDragLeave={handleDragLeave}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  isDragOver={dragOverSlot === index}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Available Events Pool */}
-          <div className="border-t pt-6">
-            <h3 className="text-md font-medium text-gray-700 mb-4 flex items-center">
-              <span className="text-gray-500 mr-2">📚</span>
-              Available Events
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {availableEvents.map((event) => (
-                <EventCard
-                  key={event.name}
-                  event={event}
-                  isDragging={draggedItem?.eventName === event.name}
+                  isDragging={draggedItem?.sourceIndex === index}
+                  isPositioned={true}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                 />
-              ))}
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="text-center mt-8">
-            <button
-              onClick={handleSubmit}
-              disabled={!isTimelineFull(gameState.timelineOrder) || gameState.gameComplete}
-              className="bg-primary-500 hover:bg-primary-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              {gameState.gameComplete ? (
-                <>✅ Game Complete</>
-              ) : !isTimelineFull(gameState.timelineOrder) ? (
-                <>⚠️ Fill All Positions</>
               ) : (
-                <>✓ Submit Timeline</>
+                <div className="h-[60px] flex items-center justify-center border-2 border-dashed border-gray-700 rounded text-gray-500 text-sm">
+                  Drop event here
+                </div>
               )}
-            </button>
-          </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Submit Button */}
+        <div className="text-center mb-8">
+          <button
+            onClick={handleSubmit}
+            disabled={gameState.gameComplete}
+            className="w-full bg-green-400 hover:bg-green-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-black disabled:text-gray-500 font-semibold py-3 rounded transition-colors"
+          >
+            {gameState.gameComplete ? 'Game Complete' : 'Submit'}
+          </button>
         </div>
       </main>
 
@@ -288,25 +243,6 @@ export function GameBoard() {
         attempts={gameState.attempts}
         correctOrder={correctOrder}
       />
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              © 2024 Chronicle. A daily historical timeline game.
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                ❓
-              </button>
-              <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                ⚙️
-              </button>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
