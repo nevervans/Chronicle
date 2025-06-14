@@ -30,10 +30,11 @@ The application follows a monorepo structure with separate client and server dir
 - **Drag & Drop**: HTML5 drag and drop API for event positioning
 
 ### Data Layer
-- **Database**: PostgreSQL with Drizzle ORM
-- **Schema**: Simple events table with id, name, and year fields
-- **Storage**: In-memory storage class with JSON data fallback for development
-- **Migrations**: Drizzle migrations for schema management
+- **Database**: PostgreSQL with Drizzle ORM for persistent storage
+- **Schema**: Events table with id, name, and year fields
+- **Storage**: DatabaseStorage class with 150+ historical events
+- **Initialization**: Automatic database seeding from JSON data on startup
+- **Migrations**: Drizzle push for schema management
 
 ### UI Components
 - **Game Board**: Main game interface with drag-and-drop timeline

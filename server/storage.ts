@@ -1,31 +1,41 @@
-import { Event, type InsertEvent } from "@shared/schema";
+import { events, type Event, type InsertEvent } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import eventsData from "./data/events.json";
 
 export interface IStorage {
   getAllEvents(): Promise<Event[]>;
   getDailyEvents(date: string): Promise<Event[]>;
+  initializeEvents(): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private events: Event[];
-
-  constructor() {
-    // Load events from JSON file and add IDs
-    this.events = eventsData.map((event, index) => ({
-      id: index + 1,
-      name: event.name,
-      year: event.year
-    }));
+export class DatabaseStorage implements IStorage {
+  async initializeEvents(): Promise<void> {
+    // Check if events table is empty
+    const existingEvents = await db.select().from(events).limit(1);
+    
+    if (existingEvents.length === 0) {
+      // Populate the database with events from JSON
+      const eventsToInsert = eventsData.map((event) => ({
+        name: event.name,
+        year: event.year
+      }));
+      
+      await db.insert(events).values(eventsToInsert);
+      console.log(`Initialized database with ${eventsToInsert.length} historical events`);
+    }
   }
 
   async getAllEvents(): Promise<Event[]> {
-    return this.events;
+    return await db.select().from(events);
   }
 
   async getDailyEvents(date: string): Promise<Event[]> {
+    const allEvents = await this.getAllEvents();
+    
     // Generate deterministic daily events based on date
     const seed = this.dateToSeed(date);
-    const shuffledEvents = this.shuffleArray([...this.events], seed);
+    const shuffledEvents = this.shuffleArray([...allEvents], seed);
     return shuffledEvents.slice(0, 6);
   }
 
@@ -51,4 +61,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
