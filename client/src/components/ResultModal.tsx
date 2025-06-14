@@ -1,4 +1,5 @@
 import { GameEvent } from "@/types/game";
+import { generateShareText } from "@/lib/storage";
 
 interface ResultModalProps {
   isOpen: boolean;
@@ -16,6 +17,29 @@ export function ResultModal({
   correctOrder 
 }: ResultModalProps) {
   if (!isOpen) return null;
+
+  const handleShare = async () => {
+    const shareText = generateShareText(won, attempts);
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Chronicle Daily Timeline',
+          text: shareText
+        });
+      } catch (error) {
+        // User cancelled or share failed, fallback to clipboard
+        await navigator.clipboard.writeText(shareText);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        // Could add a toast notification here
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+      }
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
@@ -51,12 +75,21 @@ export function ResultModal({
             </div>
           </div>
           
-          <button
-            onClick={onClose}
-            className="bg-green-400 hover:bg-green-500 text-black font-medium px-6 py-2 rounded transition-colors"
-          >
-            View Statistics
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleShare}
+              className="w-full bg-green-400 hover:bg-green-500 text-black font-medium py-3 rounded transition-colors"
+            >
+              Share Result
+            </button>
+            
+            <button
+              onClick={onClose}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-medium py-3 rounded transition-colors"
+            >
+              View Statistics
+            </button>
+          </div>
         </div>
       </div>
     </div>

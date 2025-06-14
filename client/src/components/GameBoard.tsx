@@ -25,6 +25,8 @@ export function GameBoard() {
   const [showResultModal, setShowResultModal] = useState(false);
   const [stats, setStats] = useState<GameStats>(loadStats());
   const [isShaking, setIsShaking] = useState(false);
+  const [gameAlreadyCompleted, setGameAlreadyCompleted] = useState(false);
+  const [todaysResult, setTodaysResult] = useState<{ won: boolean; attempts: number } | null>(null);
 
   // Fetch daily events
   const { data: dailyEvents, isLoading } = useQuery({
@@ -73,6 +75,19 @@ export function GameBoard() {
   };
 
   useEffect(() => {
+    // Check if game was already completed today
+    if (hasPlayedToday()) {
+      const result = getTodaysResult();
+      setGameAlreadyCompleted(true);
+      setTodaysResult(result);
+      setGameState(prev => ({
+        ...prev,
+        gameComplete: true,
+        gameWon: result?.won || false,
+        attempts: result?.attempts || 0
+      }));
+    }
+
     if (dailyEvents && dailyEvents.length === 6) {
       // Initialize timeline with shuffled events
       const shuffled = [...dailyEvents].sort(() => Math.random() - 0.5);
@@ -197,8 +212,8 @@ export function GameBoard() {
                   onDragEnd={handleDragEnd}
                 />
               ) : (
-                <div className="h-[60px] flex items-center justify-center border-2 border-dashed border-gray-700 rounded text-gray-500 text-sm">
-                  Drop event here
+                <div className="h-[60px] flex items-center justify-center bg-gray-800 border-2 border-gray-700 rounded text-gray-500 text-sm">
+                  Position {index + 1}
                 </div>
               )}
             </div>
@@ -207,13 +222,34 @@ export function GameBoard() {
 
         {/* Submit Button */}
         <div className="text-center mb-8">
-          <button
-            onClick={handleSubmit}
-            disabled={gameState.gameComplete}
-            className="w-full bg-green-400 hover:bg-green-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-black disabled:text-gray-500 font-semibold py-3 rounded transition-colors"
-          >
-            {gameState.gameComplete ? 'Game Complete' : 'Submit'}
-          </button>
+          {gameAlreadyCompleted ? (
+            <div className="text-center">
+              <p className="text-gray-400 mb-4">You've already played today!</p>
+              <p className="text-sm text-gray-500 mb-4">
+                Result: {todaysResult?.won ? `Solved in ${todaysResult.attempts} attempts` : 'Not solved'}
+              </p>
+              <button
+                onClick={() => setShowResultModal(true)}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-3 rounded transition-colors mb-3"
+              >
+                View Today's Result
+              </button>
+              <button
+                onClick={() => setShowStatsModal(true)}
+                className="w-full bg-green-400 hover:bg-green-500 text-black font-semibold py-3 rounded transition-colors"
+              >
+                View Statistics
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={gameState.gameComplete}
+              className="w-full bg-green-400 hover:bg-green-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-black disabled:text-gray-500 font-semibold py-3 rounded transition-colors"
+            >
+              {gameState.gameComplete ? 'Game Complete' : 'Submit'}
+            </button>
+          )}
         </div>
       </main>
 
