@@ -53,41 +53,41 @@ export function ResultModal({
             </div>
           </div>
           
-          <h3 className="text-xl font-bold text-gray-100 mb-2">
+          <h3 className="text-3xl font-bold text-gray-100 mb-3">
             {won ? 'Solved!' : 'Game Over'}
           </h3>
           
-          <p className="text-gray-300 mb-4">
+          <p className="text-gray-300 mb-8 text-lg font-medium">
             {won 
               ? `Completed in ${attempts} attempt${attempts === 1 ? '' : 's'}`
               : "Correct timeline:"
             }
           </p>
           
-          <div className="bg-gray-700 rounded p-4 mb-6">
-            <div className="space-y-2 text-sm">
+          <div className="bg-gray-700/50 border border-gray-600/50 rounded-2xl p-6 mb-8 backdrop-blur-sm">
+            <div className="space-y-3 text-sm">
               {correctOrder.map((event, index) => (
-                <div key={event.name} className="flex justify-between items-center text-gray-200">
-                  <span className="text-left flex-1 text-xs">{event.name}</span>
-                  <span className="font-medium text-green-400 ml-2 text-xs">{event.year}</span>
+                <div key={event.name} className="flex justify-between items-center text-gray-200 p-2 bg-gray-800/30 rounded-lg">
+                  <span className="text-left flex-1 font-medium">{event.name}</span>
+                  <span className="font-bold text-green-400 ml-4">{event.year}</span>
                 </div>
               ))}
             </div>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <button
               onClick={handleShare}
-              className="w-full bg-green-400 hover:bg-green-500 text-black font-medium py-3 rounded transition-colors"
+              className="w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-black font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl"
             >
               Share Result
             </button>
             
             <button
               onClick={onClose}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-medium py-3 rounded transition-colors"
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              View Statistics
+              Close
             </button>
           </div>
         </div>
