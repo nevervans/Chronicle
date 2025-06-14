@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -71,7 +72,7 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     font-feature-settings: 'kern' 1, 'liga' 1;
   }
 }
@@ -80,63 +81,105 @@
   /* Custom animations */
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
-    20%, 40%, 60%, 80% { transform: translateX(3px); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
   }
   
   @keyframes success-bounce {
     0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
+    50% { transform: scale(1.05); }
     100% { transform: scale(1); }
   }
   
   @keyframes fade-in {
-    0% { opacity: 0; transform: translateY(8px); }
+    0% { opacity: 0; transform: translateY(20px); }
     100% { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(34, 197, 94, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.4); }
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { background-color: rgb(34, 197, 94); }
+    50% { background-color: rgb(22, 163, 74); }
+  }
+
+  @keyframes confetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-200px) rotate(360deg); opacity: 0; }
+  }
+
   .animate-shake {
-    animation: shake 0.4s ease-in-out;
+    animation: shake 0.5s ease-in-out;
   }
   
   .animate-success-bounce {
-    animation: success-bounce 0.6s ease-out;
+    animation: success-bounce 0.8s ease-out;
   }
   
   .animate-fade-in {
-    animation: fade-in 0.2s ease-out;
+    animation: fade-in 0.6s ease-out;
   }
 
-  /* Event card styles - Wordle-inspired */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-green {
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  .animate-confetti {
+    animation: confetti 1s ease-out forwards;
+  }
+
+  /* Event card styles - Modern design */
   .event-card {
     user-select: none;
-    transition: all 0.15s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid var(--gray-700);
     background-color: var(--gray-800);
     color: var(--gray-100);
     font-weight: 500;
     letter-spacing: -0.02em;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 1rem;
+    min-height: 60px;
   }
   
   .event-card:hover {
-    border-color: var(--gray-600);
+    border-color: var(--green-400);
     background-color: var(--gray-700);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(34, 197, 94, 0.1);
   }
   
   .event-card:active {
     cursor: grabbing;
+    transform: translateY(0) scale(1);
   }
 
   .event-card.dragging {
-    opacity: 0.8;
-    transform: rotate(1deg) scale(1.02);
+    opacity: 0.9;
+    transform: rotate(2deg) scale(1.05);
     border-color: var(--green-400);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(34, 197, 94, 0.3);
+    z-index: 50;
   }
 
   .event-card.positioned {
-    background-color: var(--gray-700);
+    background-color: var(--gray-750);
     border-color: var(--gray-600);
   }
 

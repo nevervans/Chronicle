@@ -155,15 +155,17 @@ export function GameBoard() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
       {/* Header */}
-      <header className="border-b border-gray-700 py-4">
-        <div className="max-w-lg mx-auto px-4">
+      <header className="border-b border-gray-700/50 py-6 backdrop-blur-sm">
+        <div className="max-w-lg mx-auto px-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Chronicle</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent">
+              CHRONICLE
+            </h1>
             <button
               onClick={() => setShowStatsModal(true)}
-              className="p-2 hover:bg-gray-800 rounded transition-colors"
+              className="p-3 hover:bg-gray-800 rounded-xl transition-all duration-200 hover:scale-105 group"
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+              <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400 group-hover:text-green-400 transition-colors">
                 <rect x="2" y="12" width="3" height="6" rx="1"/>
                 <rect x="6" y="8" width="3" height="10" rx="1"/>
                 <rect x="10" y="5" width="3" height="13" rx="1"/>
@@ -175,11 +177,10 @@ export function GameBoard() {
       </header>
 
       {/* Main Game */}
-      <main className="max-w-lg mx-auto px-4 py-8">
+      <main className="max-w-lg mx-auto px-6 py-8">
         {/* Game Info */}
-        <div className="text-center mb-8">
-          <p className="text-gray-400 text-sm mb-2">{gameState.gameDate}</p>
-          <p className="text-gray-300 text-sm mb-6">
+        <div className="text-center mb-10">
+          <p className="text-gray-300 text-lg mb-8 font-medium">
             Arrange 6 historical events in chronological order
           </p>
           
@@ -191,11 +192,11 @@ export function GameBoard() {
         </div>
 
         {/* Event Timeline - Vertical Layout */}
-        <div className={`space-y-3 mb-8 ${isShaking ? 'animate-shake' : ''}`}>
+        <div className={`space-y-4 mb-10 ${isShaking ? 'animate-shake' : ''}`}>
           {gameState.timelineOrder.map((event, index) => (
             <div
               key={index}
-              className={`drop-zone min-h-[60px] rounded p-1 ${
+              className={`drop-zone min-h-[70px] rounded-2xl p-2 transition-all duration-300 ${
                 dragOverIndex === index ? 'drag-over' : ''
               }`}
               onDragOver={(e) => handleDragOver(e, index)}
@@ -212,8 +213,11 @@ export function GameBoard() {
                   onDragEnd={handleDragEnd}
                 />
               ) : (
-                <div className="h-[60px] flex items-center justify-center bg-gray-800 border-2 border-gray-700 rounded text-gray-500 text-sm">
-                  Position {index + 1}
+                <div className="h-[70px] flex items-center justify-center bg-gray-800/50 border-2 border-gray-700/50 rounded-2xl text-gray-500 text-sm font-medium backdrop-blur-sm transition-all duration-300 hover:border-gray-600/50 hover:bg-gray-800/70">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                    <span>Position {index + 1}</span>
+                  </div>
                 </div>
               )}
             </div>
