@@ -62,15 +62,15 @@ export function StatsModal({
             <div className="text-sm text-gray-400">Played</div>
           </div>
           <div className="text-center p-4 bg-gray-700 rounded">
-            <div className="text-2xl font-bold text-green-400">{winRate}%</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--accent-gold)' }}>{winRate}%</div>
             <div className="text-sm text-gray-400">Win %</div>
           </div>
           <div className="text-center p-4 bg-gray-700 rounded">
-            <div className="text-2xl font-bold text-green-400">{stats.currentStreak}</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--accent-gold)' }}>{stats.currentStreak}</div>
             <div className="text-sm text-gray-400">Current Streak</div>
           </div>
           <div className="text-center p-4 bg-gray-700 rounded">
-            <div className="text-2xl font-bold text-green-400">{avgAttempts}</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--accent-gold)' }}>{avgAttempts}</div>
             <div className="text-sm text-gray-400">Avg Attempts</div>
           </div>
         </div>
@@ -78,7 +78,10 @@ export function StatsModal({
         <div className="text-center">
           <button
             onClick={handleShare}
-            className="bg-green-400 hover:bg-green-500 text-black font-medium px-6 py-2 rounded transition-colors"
+            className="text-black font-medium px-6 py-2 rounded transition-colors hover:opacity-90"
+            style={{ 
+              backgroundColor: 'var(--accent-gold)'
+            }}
           >
             Share Results
           </button>

@@ -272,45 +272,47 @@ export function GameBoard() {
         </div>
       </main>
 
-      {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 border-t backdrop-blur-sm sticky-footer" style={{ 
-        backgroundColor: 'var(--bg-secondary)', 
-        borderColor: 'var(--bg-tertiary)' 
-      }}>
-        <div className="max-w-[600px] mx-auto px-6 py-4">
-          <div className="flex justify-center space-x-4">
-            <button 
-              onClick={() => setShowResultModal(true)}
-              className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
-              style={{ 
-                backgroundColor: 'var(--bg-tertiary)', 
-                color: 'var(--text-primary)' 
-              }}
-            >
-              Share Result
-            </button>
-            <button 
-              className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
-              style={{ 
-                backgroundColor: 'var(--bg-tertiary)', 
-                color: 'var(--text-primary)' 
-              }}
-            >
-              Learn More
-            </button>
-            <button 
-              onClick={() => setShowStatsModal(true)}
-              className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
-              style={{ 
-                backgroundColor: 'var(--bg-tertiary)', 
-                color: 'var(--text-primary)' 
-              }}
-            >
-              View Stats
-            </button>
+      {/* Sticky Footer - Only show after game completion */}
+      {gameState.gameComplete && (
+        <div className="fixed bottom-0 left-0 right-0 border-t backdrop-blur-sm sticky-footer" style={{ 
+          backgroundColor: 'var(--bg-secondary)', 
+          borderColor: 'var(--bg-tertiary)' 
+        }}>
+          <div className="max-w-[600px] mx-auto px-6 py-4">
+            <div className="flex justify-center space-x-4">
+              <button 
+                onClick={() => setShowResultModal(true)}
+                className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                style={{ 
+                  backgroundColor: 'var(--bg-tertiary)', 
+                  color: 'var(--text-primary)' 
+                }}
+              >
+                Share Result
+              </button>
+              <button 
+                className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                style={{ 
+                  backgroundColor: 'var(--bg-tertiary)', 
+                  color: 'var(--text-primary)' 
+                }}
+              >
+                Learn More
+              </button>
+              <button 
+                onClick={() => setShowStatsModal(true)}
+                className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                style={{ 
+                  backgroundColor: 'var(--bg-tertiary)', 
+                  color: 'var(--text-primary)' 
+                }}
+              >
+                View Stats
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Modals */}
       <StatsModal
