@@ -19,9 +19,24 @@ export function EventTile({
   onDragEnd,
   className = ""
 }: EventTileProps) {
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Enable mobile drag
+    const touch = e.touches[0];
+    const dragStartEvent = new Event('dragstart') as any;
+    dragStartEvent.dataTransfer = {
+      setData: () => {},
+      effectAllowed: 'move'
+    };
+    onDragStart(dragStartEvent, event, index);
+  };
+
+  const handleTouchEnd = () => {
+    onDragEnd();
+  };
+
   return (
     <div
-      className={`event-card w-full cursor-grab font-medium ${
+      className={`event-card w-full cursor-grab font-medium touch-manipulation ${
         isDragging ? 'dragging' : ''
       } ${
         isPositioned ? 'positioned' : ''
@@ -29,6 +44,8 @@ export function EventTile({
       draggable
       onDragStart={(e) => onDragStart(e, event, index)}
       onDragEnd={onDragEnd}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Drag Icon on Left */}
       <div className="drag-handle mr-3 opacity-60 hover:opacity-100 transition-opacity" style={{ color: 'var(--text-secondary)' }}>

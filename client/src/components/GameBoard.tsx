@@ -27,6 +27,7 @@ export function GameBoard() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [stats, setStats] = useState<GameStats>(loadStats());
   const [isShaking, setIsShaking] = useState(false);
+  const [attemptHistory, setAttemptHistory] = useState<string[][]>([]); // Track emoji results for each attempt
   const [gameAlreadyCompleted, setGameAlreadyCompleted] = useState(false);
   const [todaysResult, setTodaysResult] = useState<{ won: boolean; attempts: number } | null>(null);
 
@@ -68,6 +69,18 @@ export function GameBoard() {
     setDragOverIndex(null);
   };
 
+  const generateAttemptEmojis = (userOrder: GameEvent[], correctOrder: GameEvent[]): string[] => {
+    return userOrder.map((event, index) => {
+      if (correctOrder[index] && event.name === correctOrder[index].name) {
+        return '🟩'; // Green for correct position
+      } else if (correctOrder.some(correctEvent => correctEvent.name === event.name)) {
+        return '🟨'; // Yellow for correct event, wrong position
+      } else {
+        return '⬜'; // White for not in timeline (shouldn't happen in our case)
+      }
+    });
+  };
+
   const handleSubmit = () => {
     if (gameState.currentEvents.length === 0) {
       setIsShaking(true);
@@ -77,13 +90,20 @@ export function GameBoard() {
 
     const newAttempts = gameState.attempts + 1;
     const isCorrect = checkTimelineCorrect(gameState.currentEvents);
+    
+    // Generate emoji feedback for this attempt
+    const attemptEmojis = generateAttemptEmojis(gameState.currentEvents, correctOrder);
+    const newAttemptHistory = [...attemptHistory, attemptEmojis];
+    setAttemptHistory(newAttemptHistory);
 
     if (isCorrect) {
-      // Game won!
+      // Game won! Sort events in correct order
+      const sortedEvents = getCorrectOrder(gameState.currentEvents);
       const newStats = updateStats(true, newAttempts);
       setStats(newStats);
       setGameState(prev => ({
         ...prev,
+        currentEvents: sortedEvents,
         attempts: newAttempts,
         gameComplete: true,
         gameWon: true
@@ -93,16 +113,17 @@ export function GameBoard() {
         setShowSuccessMessage(false);
       }, 2000);
     } else if (newAttempts >= gameState.maxAttempts) {
-      // Game lost!
+      // Game lost! Show events in correct order
+      const sortedEvents = getCorrectOrder(gameState.currentEvents);
       const newStats = updateStats(false, newAttempts);
       setStats(newStats);
       setGameState(prev => ({
         ...prev,
+        currentEvents: sortedEvents,
         attempts: newAttempts,
         gameComplete: true,
         gameWon: false
       }));
-      // Don't show result modal, display timeline inline
     } else {
       // Continue playing
       setGameState(prev => ({
@@ -238,8 +259,16 @@ export function GameBoard() {
               maxAttempts={gameState.maxAttempts} 
             />
 
+            {/* Feedback Dots - Show correctly positioned events */}
+            {!gameState.gameComplete && (
+              <FeedbackDots 
+                currentEvents={gameState.currentEvents}
+                correctOrder={correctOrder}
+              />
+            )}
+
             {gameState.gameComplete ? (
-              /* Show correct timeline after completion */
+              /* Show completion message and events in correct order */
               <div className="space-y-6">
                 <div className="text-center mb-6">
                   {gameState.gameWon ? (
@@ -260,21 +289,31 @@ export function GameBoard() {
                   )}
                 </div>
 
-                <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--bg-secondary)' }}>
-                  <h4 className="font-heading text-lg mb-4" style={{ color: 'var(--text-primary)' }}>Correct Timeline:</h4>
-                  <div className="space-y-4 relative">
-                    {/* Timeline line */}
-                    <div className="absolute left-4 top-4 bottom-4 w-0.5" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
-                    
-                    {correctOrder.map((event, index) => (
-                      <div key={event.name} className="flex items-start relative">
-                        {/* Timeline dot */}
-                        <div className="w-2 h-2 rounded-full mt-2 mr-4 relative z-10" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
-                        
-                        {/* Event content */}
-                        <div className="flex-1 font-body">
-                          <div className="font-semibold mb-1" style={{ color: 'var(--accent-gold)' }}>{event.year}</div>
-                          <div style={{ color: 'var(--text-primary)' }}>{event.name}</div>
+                {/* Show events in correct order */}
+                <div className="space-y-4">
+                  <h2 className="font-heading text-xl text-center mb-6" style={{ color: 'var(--text-primary)' }}>
+                    Correct Order
+                  </h2>
+                  <div className="space-y-3">
+                    {gameState.currentEvents.map((event, index) => (
+                      <div key={event.name} className="event-card w-full font-medium">
+                        <div className="drag-handle mr-3 opacity-60" style={{ color: 'var(--text-secondary)' }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="9" cy="12" r="1"/>
+                            <circle cx="9" cy="5" r="1"/>
+                            <circle cx="9" cy="19" r="1"/>
+                            <circle cx="15" cy="12" r="1"/>
+                            <circle cx="15" cy="5" r="1"/>
+                            <circle cx="15" cy="19" r="1"/>
+                          </svg>
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="font-body leading-tight" style={{ color: 'var(--text-primary)' }}>
+                            {event.name}
+                          </div>
+                          <div className="text-sm mt-1" style={{ color: 'var(--accent-gold)' }}>
+                            {event.year}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -341,8 +380,10 @@ export function GameBoard() {
             <div className="flex justify-center space-x-4">
               <button 
                 onClick={() => {
-                  // Share functionality
-                  const shareText = `Chronicle Timeline Game\n${gameState.gameWon ? `Solved in ${gameState.attempts} attempts!` : 'Try again tomorrow'}\n\nPlay daily at: ${window.location.origin}`;
+                  // Generate emoji grid for sharing
+                  const emojiGrid = attemptHistory.map(attempt => attempt.join('')).join('\n');
+                  const shareText = `Chronicle Timeline Game\n\n${emojiGrid}\n\n${gameState.gameWon ? `Solved in ${gameState.attempts}/${gameState.maxAttempts} attempts!` : `Failed in ${gameState.maxAttempts}/${gameState.maxAttempts} attempts`}\n\nPlay daily at: ${window.location.origin}`;
+                  
                   if (navigator.share) {
                     navigator.share({ title: 'Chronicle Timeline', text: shareText });
                   } else {
