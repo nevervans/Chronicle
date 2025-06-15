@@ -277,9 +277,31 @@
 
   @media (max-width: 768px) {
     .event-card {
-      padding: 20px 16px;
+      padding: 18px 20px;
       margin-bottom: 24px;
       min-height: 80px;
+      font-size: 1.1rem;
+    }
+
+    .drag-handle {
+      margin-right: 16px;
+    }
+
+    .drag-handle svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  /* Mobile sticky footer */
+  @media (max-width: 768px) {
+    .sticky-footer {
+      padding: 16px;
+    }
+
+    .sticky-footer button {
+      padding: 16px 12px;
+      font-size: 0.9rem;
     }
   }
 

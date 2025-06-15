@@ -273,7 +273,7 @@ export function GameBoard() {
       </main>
 
       {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 border-t backdrop-blur-sm" style={{ 
+      <div className="fixed bottom-0 left-0 right-0 border-t backdrop-blur-sm sticky-footer" style={{ 
         backgroundColor: 'var(--bg-secondary)', 
         borderColor: 'var(--bg-tertiary)' 
       }}>
