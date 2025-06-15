@@ -98,6 +98,10 @@ The application follows a monorepo structure with separate client and server dir
 - June 14, 2025: Initial setup with React frontend and Express backend
 - June 14, 2025: Redesigned to Wordle-style minimalist black UI with vertical event layout
 - June 14, 2025: Added PostgreSQL database integration with 150+ historical events
+- June 15, 2025: Enhanced UI with Playfair Display typography, gold color scheme, improved event cards with drag icons
+- June 15, 2025: Implemented MongoDB-style backend with enhanced schema (category, region, difficulty, tags, usage tracking)
+- June 15, 2025: Added daily puzzle caching system and /api/puzzle endpoint with diversity algorithms
+- June 15, 2025: Restored original timeline ordering mechanics (single vertical list reordering vs individual drop boxes)
 
 ## User Preferences
 

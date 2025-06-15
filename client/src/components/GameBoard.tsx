@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 export function GameBoard() {
   const [gameState, setGameState] = useState<GameState>({
     currentEvents: [],
-    timelineOrder: new Array(6).fill(null),
+    timelineOrder: [],
     attempts: 0,
     maxAttempts: 5,
     gameComplete: false,
@@ -51,73 +51,32 @@ export function GameBoard() {
     if (!draggedItem) return;
 
     const { event, sourceIndex } = draggedItem;
-    const newTimelineOrder = [...gameState.timelineOrder];
+    const newEvents = [...gameState.currentEvents];
     
-    // If dropping on a slot that already has an event, swap them
-    const existingEvent = newTimelineOrder[targetIndex];
-    if (existingEvent) {
-      // Find where this event was originally from
-      const originalIndex = gameState.currentEvents.findIndex(e => e.name === existingEvent.name);
-      if (originalIndex !== -1) {
-        // Put the existing event back in the available pool
-        newTimelineOrder[targetIndex] = event;
-        // Update the current events to include the displaced event
-        const newCurrentEvents = [...gameState.currentEvents];
-        newCurrentEvents[originalIndex] = existingEvent;
-        setGameState(prev => ({
-          ...prev,
-          timelineOrder: newTimelineOrder,
-          currentEvents: newCurrentEvents
-        }));
-      }
-    } else {
-      // Simply place the event in the empty slot
-      newTimelineOrder[targetIndex] = event;
-      // Remove from available events
-      const newCurrentEvents = gameState.currentEvents.filter((_, index) => index !== sourceIndex);
-      setGameState(prev => ({
-        ...prev,
-        timelineOrder: newTimelineOrder,
-        currentEvents: newCurrentEvents
-      }));
-    }
+    // Remove event from source position
+    newEvents.splice(sourceIndex, 1);
+    
+    // Insert event at target position
+    newEvents.splice(targetIndex, 0, event);
+    
+    setGameState(prev => ({
+      ...prev,
+      currentEvents: newEvents
+    }));
 
     setDraggedItem(null);
     setDragOverIndex(null);
   };
 
-  const handleSlotDragStart = (e: React.DragEvent, event: GameEvent) => {
-    // Find the index of this event in the timeline
-    const timelineIndex = gameState.timelineOrder.findIndex(e => e && e.name === event.name);
-    setDraggedItem({ event, sourceIndex: timelineIndex });
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleReturnToPool = (slotIndex: number) => {
-    const event = gameState.timelineOrder[slotIndex];
-    if (!event) return;
-
-    const newTimelineOrder = [...gameState.timelineOrder];
-    newTimelineOrder[slotIndex] = null;
-    
-    const newCurrentEvents = [...gameState.currentEvents, event];
-    
-    setGameState(prev => ({
-      ...prev,
-      timelineOrder: newTimelineOrder,
-      currentEvents: newCurrentEvents
-    }));
-  };
-
   const handleSubmit = () => {
-    if (!isTimelineFull(gameState.timelineOrder)) {
+    if (gameState.currentEvents.length === 0) {
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
       return;
     }
 
     const newAttempts = gameState.attempts + 1;
-    const isCorrect = checkTimelineCorrect(gameState.timelineOrder);
+    const isCorrect = checkTimelineCorrect(gameState.currentEvents);
 
     if (isCorrect) {
       // Game won!
@@ -176,9 +135,11 @@ export function GameBoard() {
   // Initialize game when events are loaded
   useEffect(() => {
     if (dailyEvents && dailyEvents.length > 0 && !gameAlreadyCompleted) {
+      // Shuffle events for initial random order
+      const shuffledEvents = [...dailyEvents].sort(() => Math.random() - 0.5);
       setGameState(prev => ({
         ...prev,
-        currentEvents: [...dailyEvents]
+        currentEvents: shuffledEvents
       }));
     }
   }, [dailyEvents, gameAlreadyCompleted]);
@@ -267,22 +228,16 @@ export function GameBoard() {
               maxAttempts={gameState.maxAttempts} 
             />
 
-            {/* Timeline Slots */}
+            {/* Timeline - All events in order */}
             <div className="space-y-4 mb-8">
               <h2 className="font-heading text-xl text-center mb-6" style={{ color: 'var(--text-primary)' }}>
                 Arrange events in chronological order
               </h2>
               <div className="space-y-3">
-                {gameState.timelineOrder.map((event, index) => (
+                {gameState.currentEvents.map((event, index) => (
                   <div
-                    key={index}
-                    className={`min-h-[64px] rounded-xl border-2 border-dashed transition-all duration-200 flex items-center justify-center p-4 ${
-                      dragOverIndex === index ? 'scale-105 shadow-lg' : ''
-                    } ${isShaking ? 'animate-shake' : ''}`}
-                    style={{
-                      backgroundColor: event ? 'var(--bg-secondary)' : 'transparent',
-                      borderColor: dragOverIndex === index ? 'var(--accent-gold)' : 'var(--bg-tertiary)'
-                    }}
+                    key={event.name}
+                    className={`transition-all duration-200 ${isShaking ? 'animate-shake' : ''}`}
                     onDragOver={(e) => {
                       e.preventDefault();
                       setDragOverIndex(index);
@@ -290,57 +245,18 @@ export function GameBoard() {
                     onDragLeave={() => setDragOverIndex(null)}
                     onDrop={(e) => handleDrop(e, index)}
                   >
-                    {event ? (
-                      <div
-                        className="w-full cursor-grab flex items-center justify-between"
-                        draggable
-                        onDragStart={(e) => handleSlotDragStart(e, event)}
-                        onDragEnd={handleDragEnd}
-                      >
-                        <span className="font-body flex-1" style={{ color: 'var(--text-primary)' }}>
-                          {event.name}
-                        </span>
-                        <button
-                          onClick={() => handleReturnToPool(index)}
-                          className="ml-3 p-1 rounded-full hover:bg-gray-700 transition-colors"
-                          style={{ color: 'var(--text-secondary)' }}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="font-body text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        Drop event here (position {index + 1})
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Available Events */}
-            {gameState.currentEvents.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-heading text-lg text-center" style={{ color: 'var(--text-primary)' }}>
-                  Available Events
-                </h3>
-                <div className="space-y-3">
-                  {gameState.currentEvents.map((event, index) => (
                     <EventTile
-                      key={event.name}
                       event={event}
                       index={index}
                       isDragging={draggedItem?.event.name === event.name}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
+                      className={dragOverIndex === index ? 'border-2 border-dashed' : ''}
                     />
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Submit Button */}
             <button
