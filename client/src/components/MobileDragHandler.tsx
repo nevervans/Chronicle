@@ -19,34 +19,39 @@ export function MobileDragHandler({ events, onReorder, children }: MobileDragHan
   const [isDragging, setIsDragging] = useState(false);
 
   const handleTouchStart = (index: number) => (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling immediately
     const touch = e.touches[0];
     setDraggedIndex(index);
     setInitialY(touch.clientY);
     setCurrentY(touch.clientY);
     setIsDragging(false);
+    
+    // Disable body scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (draggedIndex === null) return;
     
+    e.preventDefault(); // Always prevent default to stop scrolling
+    e.stopPropagation();
+    
     const touch = e.touches[0];
     setCurrentY(touch.clientY);
     
     const deltaY = Math.abs(touch.clientY - initialY);
-    if (deltaY > 10 && !isDragging) {
+    if (deltaY > 5 && !isDragging) { // Reduced threshold for better responsiveness
       setIsDragging(true);
-      e.preventDefault();
     }
     
-    if (isDragging) {
-      e.preventDefault();
-      
-      // Calculate which position to move to
-      const itemHeight = 80; // Approximate height of each event card
+    if (isDragging || deltaY > 5) {
+      // Calculate which position to move to with smoother detection
+      const itemHeight = 70; // More accurate height
       const displacement = touch.clientY - initialY;
       const positions = Math.round(displacement / itemHeight);
       
-      if (positions !== 0) {
+      if (Math.abs(positions) >= 1) {
         const newIndex = Math.max(0, Math.min(events.length - 1, draggedIndex + positions));
         
         if (newIndex !== draggedIndex) {
@@ -64,6 +69,12 @@ export function MobileDragHandler({ events, onReorder, children }: MobileDragHan
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    
+    // Re-enable body scroll
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    
     setDraggedIndex(null);
     setIsDragging(false);
     setInitialY(0);

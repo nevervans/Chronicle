@@ -270,26 +270,30 @@ export function GameBoard() {
 
             {/* Feedback Dots - Show correctly positioned events from last attempt */}
             {!gameState.gameComplete && gameState.attempts > 0 && (
-              <div className="text-center space-y-2">
-                <p className="text-sm font-body" style={{ color: 'var(--text-secondary)' }}>
-                  Correctly Placed: {lastAttemptFeedback}/6
-                </p>
-                <div className="flex justify-center space-x-2">
+              <div className="flex justify-center items-center space-x-4 mb-8">
+                <span className="font-body text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Correctly Placed:</span>
+                <div className="flex space-x-3">
                   {Array.from({ length: 6 }, (_, index) => (
                     <div
                       key={index}
-                      className="w-3 h-3 rounded-full transition-all duration-200"
+                      className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                        index < lastAttemptFeedback 
+                          ? 'scale-110 shadow-lg' 
+                          : ''
+                      }`}
                       style={{
                         backgroundColor: index < lastAttemptFeedback 
                           ? 'var(--accent-gold)' 
                           : 'var(--bg-tertiary)',
-                        border: `1px solid ${index < lastAttemptFeedback 
-                          ? 'var(--accent-gold)' 
-                          : 'var(--bg-secondary)'}`
+                        boxShadow: index < lastAttemptFeedback ? '0 4px 8px rgba(212, 175, 55, 0.3)' : 'none',
+                        transform: index < lastAttemptFeedback ? 'scale(1.2)' : 'scale(1)'
                       }}
                     />
                   ))}
                 </div>
+                <span className="font-body text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {lastAttemptFeedback}/6
+                </span>
               </div>
             )}
 
@@ -369,7 +373,7 @@ export function GameBoard() {
                           <div
                             key={event.name}
                             className={`transition-all duration-200 ${isShaking ? 'animate-shake' : ''} ${
-                              draggedIndex === index ? 'opacity-70 scale-105' : ''
+                              draggedIndex === index ? 'z-10' : ''
                             }`}
                             onDragOver={(e) => {
                               e.preventDefault();

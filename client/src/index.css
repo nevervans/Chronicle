@@ -182,23 +182,44 @@
 
   /* Mobile touch improvements */
   .touch-manipulation {
-    touch-action: manipulation;
+    touch-action: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* Prevent scrolling during drag */
+  .dragging-active {
+    overflow: hidden !important;
+    touch-action: none !important;
   }
 
   @media (max-width: 768px) {
     .event-card {
       padding: 16px 20px !important;
       min-height: 60px !important;
+      cursor: grab;
+    }
+    
+    .event-card:active {
+      cursor: grabbing;
     }
     
     .drag-handle {
       margin-right: 16px !important;
+      pointer-events: none; /* Let parent handle touch events */
+    }
+
+    /* Improved mobile drag feedback */
+    .event-card.dragging {
+      opacity: 0.8;
+      transform: scale(1.02) rotate(1deg);
+      z-index: 1000;
+      box-shadow: 0 8px 32px rgba(212, 175, 55, 0.4);
     }
   }
   
