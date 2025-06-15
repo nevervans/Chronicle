@@ -19,19 +19,51 @@ export function EventTile({
   onDragEnd,
   className = ""
 }: EventTileProps) {
+  let touchStartY = 0;
+  let touchStartX = 0;
+  let isTouchDragging = false;
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Enable mobile drag
     const touch = e.touches[0];
-    const dragStartEvent = new Event('dragstart') as any;
-    dragStartEvent.dataTransfer = {
-      setData: () => {},
-      effectAllowed: 'move'
-    };
-    onDragStart(dragStartEvent, event, index);
+    touchStartY = touch.clientY;
+    touchStartX = touch.clientX;
+    isTouchDragging = false;
+    
+    // Create a synthetic drag event
+    const syntheticEvent = {
+      dataTransfer: {
+        setData: () => {},
+        effectAllowed: 'move'
+      },
+      preventDefault: () => {},
+      stopPropagation: () => {}
+    } as any;
+    
+    setTimeout(() => {
+      if (!isTouchDragging) {
+        onDragStart(syntheticEvent, event, index);
+        isTouchDragging = true;
+      }
+    }, 150); // Delay to distinguish from scrolling
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const deltaY = Math.abs(touch.clientY - touchStartY);
+    const deltaX = Math.abs(touch.clientX - touchStartX);
+    
+    // If significant movement, prevent default and start dragging
+    if (deltaY > 10 || deltaX > 10) {
+      e.preventDefault();
+      isTouchDragging = true;
+    }
   };
 
   const handleTouchEnd = () => {
-    onDragEnd();
+    if (isTouchDragging) {
+      onDragEnd();
+      isTouchDragging = false;
+    }
   };
 
   return (
@@ -45,6 +77,7 @@ export function EventTile({
       onDragStart={(e) => onDragStart(e, event, index)}
       onDragEnd={onDragEnd}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Drag Icon on Left */}

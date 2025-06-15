@@ -5,6 +5,8 @@ import { AttemptsIndicator } from "./AttemptsIndicator";
 import { StatsModal } from "./StatsModal";
 import { ResultModal } from "./ResultModal";
 import { SuccessMessage } from "./SuccessMessage";
+import { FeedbackDots } from "./FeedbackDots";
+import { MobileDragHandler } from "./MobileDragHandler";
 import { checkTimelineCorrect, getCorrectOrder, isTimelineFull } from "@/lib/gameLogic";
 import { updateStats, loadStats, hasPlayedToday, getTodaysResult, generateShareText } from "@/lib/storage";
 import { useQuery } from "@tanstack/react-query";
@@ -328,29 +330,46 @@ export function GameBoard() {
                   <h2 className="font-heading text-xl text-center mb-6" style={{ color: 'var(--text-primary)' }}>
                     Arrange events in chronological order
                   </h2>
-                  <div className="space-y-3">
-                    {gameState.currentEvents.map((event, index) => (
-                      <div
-                        key={event.name}
-                        className={`transition-all duration-200 ${isShaking ? 'animate-shake' : ''}`}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          setDragOverIndex(index);
-                        }}
-                        onDragLeave={() => setDragOverIndex(null)}
-                        onDrop={(e) => handleDrop(e, index)}
-                      >
-                        <EventTile
-                          event={event}
-                          index={index}
-                          isDragging={draggedItem?.event.name === event.name}
-                          onDragStart={handleDragStart}
-                          onDragEnd={handleDragEnd}
-                          className={dragOverIndex === index ? 'border-2 border-dashed' : ''}
-                        />
+                  <MobileDragHandler
+                    events={gameState.currentEvents}
+                    onReorder={(newOrder) => {
+                      setGameState(prev => ({
+                        ...prev,
+                        currentEvents: newOrder
+                      }));
+                    }}
+                  >
+                    {({ onTouchStart, onTouchMove, onTouchEnd, draggedIndex }) => (
+                      <div className="space-y-3">
+                        {gameState.currentEvents.map((event, index) => (
+                          <div
+                            key={event.name}
+                            className={`transition-all duration-200 ${isShaking ? 'animate-shake' : ''} ${
+                              draggedIndex === index ? 'opacity-70 scale-105' : ''
+                            }`}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              setDragOverIndex(index);
+                            }}
+                            onDragLeave={() => setDragOverIndex(null)}
+                            onDrop={(e) => handleDrop(e, index)}
+                            onTouchStart={onTouchStart(index)}
+                            onTouchMove={onTouchMove}
+                            onTouchEnd={onTouchEnd}
+                          >
+                            <EventTile
+                              event={event}
+                              index={index}
+                              isDragging={draggedItem?.event.name === event.name || draggedIndex === index}
+                              onDragStart={handleDragStart}
+                              onDragEnd={handleDragEnd}
+                              className={dragOverIndex === index ? 'border-2 border-dashed' : ''}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </MobileDragHandler>
                 </div>
 
                 {/* Submit Button */}
