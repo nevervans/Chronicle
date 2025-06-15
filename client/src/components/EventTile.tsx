@@ -21,7 +21,7 @@ export function EventTile({
 }: EventTileProps) {
   return (
     <div
-      className={`event-card w-full p-5 cursor-grab text-center font-medium flex items-center justify-center ${
+      className={`event-card w-full cursor-grab font-medium flex items-center justify-between ${
         isDragging ? 'dragging' : ''
       } ${
         isPositioned ? 'positioned' : ''
@@ -30,7 +30,16 @@ export function EventTile({
       onDragStart={(e) => onDragStart(e, event, index)}
       onDragEnd={onDragEnd}
     >
-      <div className="text-base font-semibold text-gray-100 leading-tight">{event.name}</div>
+      <div className="flex-1 text-left">
+        <div className="font-body leading-tight" style={{ color: 'var(--text-primary)' }}>
+          {event.name}
+        </div>
+      </div>
+      <div className="drag-handle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </div>
     </div>
   );
 }

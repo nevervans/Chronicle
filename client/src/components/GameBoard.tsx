@@ -153,19 +153,20 @@ export function GameBoard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen text-gray-100" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* Header */}
-      <header className="border-b border-gray-700/50 py-6 backdrop-blur-sm">
-        <div className="max-w-lg mx-auto px-6">
+      <header className="border-b py-6 backdrop-blur-sm" style={{ borderColor: 'var(--bg-tertiary)' }}>
+        <div className="max-w-[600px] mx-auto px-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent">
+            <h1 className="font-title text-4xl" style={{ color: 'var(--text-primary)' }}>
               CHRONICLE
             </h1>
             <button
               onClick={() => setShowStatsModal(true)}
-              className="p-3 hover:bg-gray-800 rounded-xl transition-all duration-200 hover:scale-105 group"
+              className="p-3 rounded-xl transition-all duration-200 hover:scale-105 group"
+              style={{ backgroundColor: 'var(--bg-secondary)' }}
             >
-              <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400 group-hover:text-green-400 transition-colors">
+              <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor" className="transition-colors" style={{ color: 'var(--text-secondary)' }}>
                 <rect x="2" y="12" width="3" height="6" rx="1"/>
                 <rect x="6" y="8" width="3" height="10" rx="1"/>
                 <rect x="10" y="5" width="3" height="13" rx="1"/>
@@ -177,10 +178,10 @@ export function GameBoard() {
       </header>
 
       {/* Main Game */}
-      <main className="max-w-lg mx-auto px-6 py-8">
+      <main className="max-w-[600px] mx-auto px-6 py-8 pb-32">
         {/* Game Info */}
-        <div className="text-center mb-10">
-          <p className="text-gray-300 text-lg mb-8 font-medium">
+        <div className="text-center mb-8">
+          <p className="font-heading text-xl mb-6" style={{ color: 'var(--text-primary)' }}>
             Arrange 6 historical events in chronological order
           </p>
           
@@ -192,11 +193,11 @@ export function GameBoard() {
         </div>
 
         {/* Event Timeline - Vertical Layout */}
-        <div className={`space-y-4 mb-10 ${isShaking ? 'animate-shake' : ''}`}>
+        <div className={`mb-8 ${isShaking ? 'animate-shake' : ''}`}>
           {gameState.timelineOrder.map((event, index) => (
             <div
               key={index}
-              className={`drop-zone min-h-[70px] rounded-2xl p-2 transition-all duration-300 ${
+              className={`drop-zone rounded-xl transition-all duration-300 ${
                 dragOverIndex === index ? 'drag-over' : ''
               }`}
               onDragOver={(e) => handleDragOver(e, index)}
@@ -213,9 +214,13 @@ export function GameBoard() {
                   onDragEnd={handleDragEnd}
                 />
               ) : (
-                <div className="h-[70px] flex items-center justify-center bg-gray-800/50 border-2 border-gray-700/50 rounded-2xl text-gray-500 text-sm font-medium backdrop-blur-sm transition-all duration-300 hover:border-gray-600/50 hover:bg-gray-800/70">
+                <div className="min-h-[72px] flex items-center justify-center border-2 border-dashed rounded-xl font-body text-sm transition-all duration-300 mx-0 mb-6" style={{ 
+                  borderColor: 'var(--bg-tertiary)', 
+                  backgroundColor: 'rgba(42, 42, 45, 0.3)',
+                  color: 'var(--text-secondary)'
+                }}>
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }}></div>
                     <span>Position {index + 1}</span>
                   </div>
                 </div>
@@ -228,36 +233,82 @@ export function GameBoard() {
         <div className="text-center mb-8">
           {gameAlreadyCompleted ? (
             <div className="text-center space-y-4">
-              <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm">
-                <p className="text-gray-300 mb-2 font-medium">You've already played today!</p>
-                <p className="text-sm text-gray-500">
+              <div className="rounded-2xl p-6 border backdrop-blur-sm" style={{ 
+                backgroundColor: 'var(--bg-secondary)', 
+                borderColor: 'var(--bg-tertiary)' 
+              }}>
+                <p className="font-heading mb-2" style={{ color: 'var(--text-primary)' }}>You've already played today!</p>
+                <p className="font-body text-sm" style={{ color: 'var(--text-secondary)' }}>
                   Result: {todaysResult?.won ? `Solved in ${todaysResult.attempts} attempts` : 'Not solved'}
                 </p>
               </div>
               <button
                 onClick={() => setShowResultModal(true)}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg mb-3"
+                className="font-button w-full py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg mb-3"
+                style={{ 
+                  backgroundColor: 'var(--bg-tertiary)', 
+                  color: 'var(--text-primary)' 
+                }}
               >
                 View Today's Result
-              </button>
-              <button
-                onClick={() => setShowStatsModal(true)}
-                className="w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-black font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl"
-              >
-                View Statistics
               </button>
             </div>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={gameState.gameComplete}
-              className="w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-black disabled:text-gray-500 font-bold py-5 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl text-lg"
+              className="font-button w-full py-5 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl text-lg disabled:cursor-not-allowed"
+              style={{ 
+                background: gameState.gameComplete ? 'var(--bg-tertiary)' : 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))',
+                color: gameState.gameComplete ? 'var(--text-secondary)' : '#1A1A1D',
+                boxShadow: gameState.gameComplete ? 'none' : '0 8px 32px rgba(212, 175, 55, 0.3)'
+              }}
             >
               {gameState.gameComplete ? 'Game Complete' : 'Submit Timeline'}
             </button>
           )}
         </div>
       </main>
+
+      {/* Sticky Footer */}
+      <div className="fixed bottom-0 left-0 right-0 border-t backdrop-blur-sm" style={{ 
+        backgroundColor: 'var(--bg-secondary)', 
+        borderColor: 'var(--bg-tertiary)' 
+      }}>
+        <div className="max-w-[600px] mx-auto px-6 py-4">
+          <div className="flex justify-center space-x-4">
+            <button 
+              onClick={() => setShowResultModal(true)}
+              className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+              style={{ 
+                backgroundColor: 'var(--bg-tertiary)', 
+                color: 'var(--text-primary)' 
+              }}
+            >
+              Share Result
+            </button>
+            <button 
+              className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+              style={{ 
+                backgroundColor: 'var(--bg-tertiary)', 
+                color: 'var(--text-primary)' 
+              }}
+            >
+              Learn More
+            </button>
+            <button 
+              onClick={() => setShowStatsModal(true)}
+              className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+              style={{ 
+                backgroundColor: 'var(--bg-tertiary)', 
+                color: 'var(--text-primary)' 
+              }}
+            >
+              View Stats
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Modals */}
       <StatsModal

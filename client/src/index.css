@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -92,8 +92,8 @@
 
   /* Typography hierarchy */
   .font-title {
-    font-family: 'DM Serif Display', serif;
-    font-weight: 400;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.2;
   }
@@ -187,48 +187,73 @@
     animation: confetti 1s ease-out forwards;
   }
 
-  /* Event card styles - Refined design */
+  /* Event card styles - Enhanced design */
   .event-card {
     user-select: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid var(--bg-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--bg-tertiary);
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 400;
-    font-size: 0.9rem;
+    font-size: 1rem;
     letter-spacing: -0.01em;
-    line-height: 1.4;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-    border-radius: 0.75rem;
-    min-height: 64px;
+    line-height: 1.5;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    min-height: 72px;
     position: relative;
+    padding: 16px;
+    margin-bottom: 20px;
   }
   
   .event-card:hover {
-    border-color: var(--accent-gold);
-    background-color: var(--bg-tertiary);
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.25), 0 6px 12px -2px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(212, 175, 55, 0.2);
+    background-color: rgba(42, 42, 45, 0.8);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 0 8px rgba(255, 255, 255, 0.1);
   }
   
   .event-card:active {
     cursor: grabbing;
-    transform: translateY(0) scale(1);
+    transform: translateY(-1px);
   }
 
   .event-card.dragging {
-    opacity: 0.95;
-    transform: rotate(1deg) scale(1.03);
+    opacity: 0.9;
+    transform: rotate(1deg) scale(1.02);
     border-color: var(--accent-gold);
     background-color: var(--bg-tertiary);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3), 0 0 0 2px var(--accent-gold);
     z-index: 50;
   }
 
   .event-card.positioned {
     background-color: var(--bg-tertiary);
     border-color: var(--gray-600);
+  }
+
+  .drag-handle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+  }
+
+  .event-card:hover .drag-handle {
+    opacity: 1;
+    color: var(--accent-gold);
+  }
+
+  @media (max-width: 768px) {
+    .event-card {
+      padding: 20px 16px;
+      margin-bottom: 24px;
+      min-height: 80px;
+    }
   }
 
   /* Drop zone styles */

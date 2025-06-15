@@ -5,21 +5,26 @@ interface AttemptsIndicatorProps {
 
 export function AttemptsIndicator({ currentAttempts, maxAttempts }: AttemptsIndicatorProps) {
   return (
-    <div className="flex justify-center items-center space-x-3 mb-6">
-      <span className="text-gray-400 text-sm font-medium">Attempts:</span>
-      <div className="flex space-x-2">
+    <div className="flex justify-center items-center space-x-4 mb-8">
+      <span className="font-body text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Attempts:</span>
+      <div className="flex space-x-3">
         {Array.from({ length: maxAttempts }, (_, i) => (
           <div
             key={i}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`w-4 h-4 rounded-full transition-all duration-300 ${
               i < currentAttempts 
-                ? 'bg-red-400 shadow-lg shadow-red-400/50' 
-                : 'bg-gray-700 hover:bg-gray-600'
+                ? 'scale-110 shadow-lg' 
+                : 'hover:scale-105'
             }`}
+            style={{
+              backgroundColor: i < currentAttempts ? 'var(--accent-gold)' : 'var(--bg-tertiary)',
+              boxShadow: i < currentAttempts ? '0 4px 8px rgba(212, 175, 55, 0.3)' : 'none',
+              transform: i < currentAttempts ? 'scale(1.2)' : 'scale(1)'
+            }}
           />
         ))}
       </div>
-      <span className="text-gray-500 text-sm">
+      <span className="font-body text-sm" style={{ color: 'var(--text-secondary)' }}>
         {currentAttempts}/{maxAttempts}
       </span>
     </div>
