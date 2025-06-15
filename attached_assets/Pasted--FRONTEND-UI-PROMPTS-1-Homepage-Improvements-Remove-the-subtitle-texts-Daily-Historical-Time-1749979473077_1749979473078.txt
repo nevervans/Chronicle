@@ -1,0 +1,170 @@
+🎨 FRONTEND / UI PROMPTS
+1. Homepage Improvements
+Remove the subtitle texts:
+
+“Daily Historical Timeline”
+
+“New puzzle every day!”
+
+Increase vertical spacing below the “Chronicle” title and above the date box.
+
+Consider using a serif font (like Playfair Display) for the title to evoke a historical feel.
+
+Constrain main content width to 600px and center-align it.
+
+2. Event Cards Design
+Style each event card with:
+
+border-radius: 12px
+
+padding: 12px 16px
+
+box-shadow: 0 0 4px rgba(255,255,255,0.05)
+
+Add hover interaction:
+
+Slight upward movement (transform: translateY(-2px))
+
+Background color darkening
+
+Cursor: pointer
+
+Optional: Add a reorder drag icon on the left side of each card.
+
+3. Attempt Tracker UI
+Replace red dots with a gold or soft green color.
+
+Add tooltip on hover: “Attempt 1”, “Attempt 2”, etc.
+
+Animate active dot with slight scale-up (scale(1.2)).
+
+4. Results Screen (Post-Solve)
+Replace “Solved!” with:
+
+Animated green checkmark or 🎉 icon
+
+Copy: “👏 You solved it in 1 attempt!”
+
+Turn the event list into a vertical timeline format:
+
+Example:
+
+python-repl
+Copy
+Edit
+1088 — First university founded in Bologna
+1347 — Black Death begins in Europe
+...
+Add a left-side timeline line if possible.
+
+Improve the CTA:
+
+Change “Share Result” to Share Your Victory 🎉
+
+Add a “Play Again Tomorrow” button or “Set Reminder” if logged in
+
+Round the event cards and increase padding.
+
+5. Mobile Responsiveness
+Increase padding on event cards for easier tapping.
+
+Use a sticky bottom bar with:
+
+Share button
+
+View Stats
+
+Learn More (links to Wikipedia/event sources)
+
+🧠 BACKEND / DATABASE PROMPTS
+1. Database Structure
+Collection: events
+
+json
+Copy
+Edit
+{
+  "_id": ObjectId,
+  "event_text": "X-rays discovered",
+  "year": 1895,
+  "category": "Science",
+  "region": "Europe",
+  "difficulty": "medium",
+  "tags": ["discovery", "physics"]
+}
+Collection: daily_puzzles
+
+json
+Copy
+Edit
+{
+  "date": "2025-06-15",
+  "event_ids": [ObjectId1, ObjectId2, ..., ObjectId6],
+  "correct_order": [0, 1, 2, 3, 4, 5],
+  "puzzle_id": 531
+}
+2. Daily Puzzle Generation Logic
+At midnight UTC:
+
+Select 6 events with diversity in:
+
+Year (spread across centuries)
+
+Category or tag (avoid all being war-related, for example)
+
+Save in daily_puzzles with their correct_order (sorted by year).
+
+Cache this for all users for the day.
+
+3. User Progress Tracking (Optional)
+Use localStorage or session cookie:
+
+js
+Copy
+Edit
+localStorage.setItem("lastPlayedDate", "2025-06-15")
+Block repeated play after completion.
+
+Store attempts locally or via backend if user login is implemented.
+
+4. Scalability Enhancements
+Tag events with:
+
+Difficulty (easy, medium, hard)
+
+Region (Asia, Europe, Global)
+
+Add used_in_puzzles_count to prevent overuse of events.
+
+5. Seeding the Database
+Scrape historical events from:
+
+Wikipedia Timelines
+
+Kaggle Datasets
+
+DBpedia/Wikidata APIs
+
+Clean and standardize fields (event_text, year, tags, region).
+
+Target: 10,000+ events.
+
+📅 API for Puzzle Fetching
+Provide this endpoint:
+
+bash
+Copy
+Edit
+GET /puzzle?date=YYYY-MM-DD
+Returns:
+
+json
+Copy
+Edit
+{
+  "events": [
+    {"id": "xxx", "text": "X-rays discovered"},
+    ...
+  ],
+  "puzzle_id": 531
+}

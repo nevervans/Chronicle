@@ -11,28 +11,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="max-w-md mx-auto text-center animate-fade-in">
+      <div className="max-w-[600px] mx-auto text-center animate-fade-in">
         {/* Logo */}
-        <div className="mb-10 animate-fade-in-up">
-          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl" style={{ background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))' }}>
+        <div className="mb-16 animate-fade-in-up">
+          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-12 shadow-2xl" style={{ background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))' }}>
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-black">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12,6 12,12 16,14"/>
             </svg>
           </div>
-          <h1 className="font-title text-6xl mb-4" style={{ color: 'var(--text-primary)' }}>
+          <h1 className="font-title text-7xl mb-12" style={{ color: 'var(--text-primary)' }}>
             Chronicle
           </h1>
-          <p className="font-body text-xl" style={{ color: 'var(--text-secondary)' }}>Daily Historical Timeline</p>
         </div>
 
         {/* Description */}
-        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <p className="font-heading text-2xl mb-3 leading-tight" style={{ color: 'var(--text-primary)' }}>
+        <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <p className="font-heading text-2xl leading-tight" style={{ color: 'var(--text-primary)' }}>
             Arrange 6 historical events in chronological order
-          </p>
-          <p className="font-body text-lg" style={{ color: 'var(--text-secondary)' }}>
-            New puzzle every day!
           </p>
         </div>
 
@@ -57,9 +53,9 @@ export default function Home() {
         <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
           <p className="font-body text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Built by Chronicle Team</p>
           <div className="flex justify-center space-x-6">
-            <button className="font-body text-sm transition-colors duration-200 hover:scale-105" style={{ color: 'var(--text-secondary)' }} onMouseEnter={(e) => e.target.style.color = 'var(--accent-gold)'} onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}>About</button>
-            <button className="font-body text-sm transition-colors duration-200 hover:scale-105" style={{ color: 'var(--text-secondary)' }} onMouseEnter={(e) => e.target.style.color = 'var(--accent-gold)'} onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}>Help</button>
-            <button className="font-body text-sm transition-colors duration-200 hover:scale-105" style={{ color: 'var(--text-secondary)' }} onMouseEnter={(e) => e.target.style.color = 'var(--accent-gold)'} onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}>Settings</button>
+            <button className="font-body text-sm transition-colors duration-200 hover:scale-105 hover:text-yellow-400" style={{ color: 'var(--text-secondary)' }}>About</button>
+            <button className="font-body text-sm transition-colors duration-200 hover:scale-105 hover:text-yellow-400" style={{ color: 'var(--text-secondary)' }}>Help</button>
+            <button className="font-body text-sm transition-colors duration-200 hover:scale-105 hover:text-yellow-400" style={{ color: 'var(--text-secondary)' }}>Settings</button>
           </div>
         </div>
       </div>

@@ -53,23 +53,39 @@ export function ResultModal({
             </div>
           </div>
           
-          <h3 className="text-3xl font-bold text-gray-100 mb-3">
-            {won ? 'Solved!' : 'Game Over'}
-          </h3>
+          {won ? (
+            <div className="mb-6">
+              <div className="animate-checkmark mb-4" style={{ color: 'var(--success-color)' }}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mx-auto">
+                  <polyline points="20,6 9,17 4,12"/>
+                </svg>
+              </div>
+              <h3 className="font-title text-3xl mb-3" style={{ color: 'var(--text-primary)' }}>
+                👏 You solved it in {attempts} attempt{attempts === 1 ? '' : 's'}!
+              </h3>
+            </div>
+          ) : (
+            <h3 className="font-title text-3xl mb-6" style={{ color: 'var(--text-primary)' }}>
+              Game Over
+            </h3>
+          )}
           
-          <p className="text-gray-300 mb-8 text-lg font-medium">
-            {won 
-              ? `Completed in ${attempts} attempt${attempts === 1 ? '' : 's'}`
-              : "Correct timeline:"
-            }
-          </p>
-          
-          <div className="bg-gray-700/50 border border-gray-600/50 rounded-2xl p-6 mb-8 backdrop-blur-sm">
-            <div className="space-y-3 text-sm">
+          <div className="rounded-2xl p-6 mb-8 border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--bg-secondary)' }}>
+            <h4 className="font-heading text-lg mb-4" style={{ color: 'var(--text-primary)' }}>Correct Timeline:</h4>
+            <div className="space-y-4 relative">
+              {/* Timeline line */}
+              <div className="absolute left-4 top-4 bottom-4 w-0.5" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+              
               {correctOrder.map((event, index) => (
-                <div key={event.name} className="flex justify-between items-center text-gray-200 p-2 bg-gray-800/30 rounded-lg">
-                  <span className="text-left flex-1 font-medium">{event.name}</span>
-                  <span className="font-bold text-green-400 ml-4">{event.year}</span>
+                <div key={event.name} className="flex items-start relative">
+                  {/* Timeline dot */}
+                  <div className="w-2 h-2 rounded-full mt-2 mr-4 relative z-10" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                  
+                  {/* Event content */}
+                  <div className="flex-1 font-body">
+                    <div className="font-semibold mb-1" style={{ color: 'var(--accent-gold)' }}>{event.year}</div>
+                    <div style={{ color: 'var(--text-primary)' }}>{event.name}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -78,17 +94,40 @@ export function ResultModal({
           <div className="space-y-4">
             <button
               onClick={handleShare}
-              className="w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-black font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl"
+              className="font-button w-full py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl text-black"
+              style={{ 
+                background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))',
+                boxShadow: '0 8px 32px rgba(212, 175, 55, 0.3)'
+              }}
             >
-              Share Result
+              {won ? 'Share Your Victory 🎉' : 'Share Result'}
             </button>
             
-            <button
-              onClick={onClose}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              Close
-            </button>
+            {won && (
+              <button
+                onClick={onClose}
+                className="font-button w-full py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                style={{ 
+                  backgroundColor: 'var(--bg-secondary)', 
+                  color: 'var(--text-primary)' 
+                }}
+              >
+                Play Again Tomorrow
+              </button>
+            )}
+            
+            {!won && (
+              <button
+                onClick={onClose}
+                className="font-button w-full py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                style={{ 
+                  backgroundColor: 'var(--bg-secondary)', 
+                  color: 'var(--text-primary)' 
+                }}
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       </div>
