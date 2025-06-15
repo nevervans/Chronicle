@@ -5,7 +5,7 @@ import { AttemptsIndicator } from "./AttemptsIndicator";
 import { StatsModal } from "./StatsModal";
 import { ResultModal } from "./ResultModal";
 import { SuccessMessage } from "./SuccessMessage";
-import { FeedbackDots } from "./FeedbackDots";
+
 import { MobileDragHandler } from "./MobileDragHandler";
 import { checkTimelineCorrect, getCorrectOrder, isTimelineFull } from "@/lib/gameLogic";
 import { updateStats, loadStats, hasPlayedToday, getTodaysResult, generateShareText } from "@/lib/storage";
@@ -30,6 +30,7 @@ export function GameBoard() {
   const [stats, setStats] = useState<GameStats>(loadStats());
   const [isShaking, setIsShaking] = useState(false);
   const [attemptHistory, setAttemptHistory] = useState<string[][]>([]); // Track emoji results for each attempt
+  const [lastAttemptFeedback, setLastAttemptFeedback] = useState<number>(0); // Number of correctly positioned events from last attempt
   const [gameAlreadyCompleted, setGameAlreadyCompleted] = useState(false);
   const [todaysResult, setTodaysResult] = useState<{ won: boolean; attempts: number } | null>(null);
 
@@ -97,6 +98,12 @@ export function GameBoard() {
     const attemptEmojis = generateAttemptEmojis(gameState.currentEvents, correctOrder);
     const newAttemptHistory = [...attemptHistory, attemptEmojis];
     setAttemptHistory(newAttemptHistory);
+    
+    // Calculate correctly positioned events for feedback
+    const correctlyPositioned = gameState.currentEvents.filter((event, index) => 
+      correctOrder[index] && event.name === correctOrder[index].name
+    ).length;
+    setLastAttemptFeedback(correctlyPositioned);
 
     if (isCorrect) {
       // Game won! Sort events in correct order
@@ -261,12 +268,29 @@ export function GameBoard() {
               maxAttempts={gameState.maxAttempts} 
             />
 
-            {/* Feedback Dots - Show correctly positioned events */}
-            {!gameState.gameComplete && (
-              <FeedbackDots 
-                currentEvents={gameState.currentEvents}
-                correctOrder={correctOrder}
-              />
+            {/* Feedback Dots - Show correctly positioned events from last attempt */}
+            {!gameState.gameComplete && gameState.attempts > 0 && (
+              <div className="text-center space-y-2">
+                <p className="text-sm font-body" style={{ color: 'var(--text-secondary)' }}>
+                  Correctly Placed: {lastAttemptFeedback}/6
+                </p>
+                <div className="flex justify-center space-x-2">
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <div
+                      key={index}
+                      className="w-3 h-3 rounded-full transition-all duration-200"
+                      style={{
+                        backgroundColor: index < lastAttemptFeedback 
+                          ? 'var(--accent-gold)' 
+                          : 'var(--bg-tertiary)',
+                        border: `1px solid ${index < lastAttemptFeedback 
+                          ? 'var(--accent-gold)' 
+                          : 'var(--bg-secondary)'}`
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
 
             {gameState.gameComplete ? (
@@ -401,7 +425,7 @@ export function GameBoard() {
                 onClick={() => {
                   // Generate emoji grid for sharing
                   const emojiGrid = attemptHistory.map(attempt => attempt.join('')).join('\n');
-                  const shareText = `Chronicle Timeline Game\n\n${emojiGrid}\n\n${gameState.gameWon ? `Solved in ${gameState.attempts}/${gameState.maxAttempts} attempts!` : `Failed in ${gameState.maxAttempts}/${gameState.maxAttempts} attempts`}\n\nPlay daily at: ${window.location.origin}`;
+                  const shareText = `Chronicle Timeline Game\n\n${emojiGrid}\n\n${gameState.gameWon ? `Solved in ${gameState.attempts}/${gameState.maxAttempts} attempts!` : `Failed in ${gameState.maxAttempts}/${gameState.maxAttempts} attempts`}\n\nPlay daily at: playthechronicle.com`;
                   
                   if (navigator.share) {
                     navigator.share({ title: 'Chronicle Timeline', text: shareText });
