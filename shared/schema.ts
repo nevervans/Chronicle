@@ -1,16 +1,35 @@
-import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Enhanced events table with MongoDB-style structure
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   year: integer("year").notNull(),
+  category: text("category").notNull(),
+  region: text("region").notNull(),
+  difficulty: text("difficulty").notNull().default("medium"),
+  tags: jsonb("tags").$type<string[]>().notNull().default([]),
+  usedInPuzzlesCount: integer("used_in_puzzles_count").notNull().default(0),
+});
+
+// Daily puzzles table for caching
+export const dailyPuzzles = pgTable("daily_puzzles", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull().unique(),
+  eventIds: jsonb("event_ids").$type<number[]>().notNull(),
+  correctOrder: jsonb("correct_order").$type<number[]>().notNull(),
+  puzzleId: integer("puzzle_id").notNull(),
 });
 
 export const insertEventSchema = createInsertSchema(events);
+export const insertDailyPuzzleSchema = createInsertSchema(dailyPuzzles);
+
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Event = typeof events.$inferSelect;
+export type InsertDailyPuzzle = z.infer<typeof insertDailyPuzzleSchema>;
+export type DailyPuzzle = typeof dailyPuzzles.$inferSelect;
 
 // Game-related schemas
 export const gameResultSchema = z.object({

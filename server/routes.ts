@@ -27,6 +27,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get puzzle by date endpoint
+  app.get("/api/puzzle", async (req, res) => {
+    try {
+      const date = req.query.date as string || new Date().toISOString().split('T')[0];
+      const events = await storage.getDailyEvents(date);
+      
+      // Generate puzzle ID based on date
+      const puzzleId = events.reduce((sum, event) => sum + event.id, 0);
+      
+      const puzzle = {
+        events: events.map(event => ({
+          id: event.id.toString(),
+          text: event.name
+        })),
+        puzzle_id: puzzleId
+      };
+      
+      res.json(puzzle);
+    } catch (error) {
+      console.error("Error fetching puzzle:", error);
+      res.status(500).json({ error: "Failed to fetch puzzle" });
+    }
+  });
+
   // Validate game result (optional endpoint for verification)
   app.post("/api/game/validate", async (req, res) => {
     try {

@@ -36,8 +36,6 @@ export function GameBoard() {
     select: (data: any) => data.events as GameEvent[]
   });
 
-
-
   const handleDragStart = (e: React.DragEvent, event: GameEvent, sourceIndex: number) => {
     setDraggedItem({ event, sourceIndex });
     e.dataTransfer.effectAllowed = 'move';
@@ -48,107 +46,151 @@ export function GameBoard() {
     setDragOverIndex(null);
   };
 
-  const handleDragOver = (e: React.DragEvent, targetIndex: number) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverIndex(targetIndex);
-  };
-
-  const handleDragLeave = () => {
-    setDragOverIndex(null);
-  };
-
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
-    setDragOverIndex(null);
+    if (!draggedItem) return;
 
-    if (!draggedItem || draggedItem.sourceIndex === targetIndex) return;
-
-    setGameState(prev => {
-      const newTimelineOrder = [...prev.timelineOrder];
-      const [movedEvent] = newTimelineOrder.splice(draggedItem.sourceIndex, 1);
-      newTimelineOrder.splice(targetIndex, 0, movedEvent);
-      
-      return {
+    const { event, sourceIndex } = draggedItem;
+    const newTimelineOrder = [...gameState.timelineOrder];
+    
+    // If dropping on a slot that already has an event, swap them
+    const existingEvent = newTimelineOrder[targetIndex];
+    if (existingEvent) {
+      // Find where this event was originally from
+      const originalIndex = gameState.currentEvents.findIndex(e => e.name === existingEvent.name);
+      if (originalIndex !== -1) {
+        // Put the existing event back in the available pool
+        newTimelineOrder[targetIndex] = event;
+        // Update the current events to include the displaced event
+        const newCurrentEvents = [...gameState.currentEvents];
+        newCurrentEvents[originalIndex] = existingEvent;
+        setGameState(prev => ({
+          ...prev,
+          timelineOrder: newTimelineOrder,
+          currentEvents: newCurrentEvents
+        }));
+      }
+    } else {
+      // Simply place the event in the empty slot
+      newTimelineOrder[targetIndex] = event;
+      // Remove from available events
+      const newCurrentEvents = gameState.currentEvents.filter((_, index) => index !== sourceIndex);
+      setGameState(prev => ({
         ...prev,
-        timelineOrder: newTimelineOrder
-      };
-    });
+        timelineOrder: newTimelineOrder,
+        currentEvents: newCurrentEvents
+      }));
+    }
+
+    setDraggedItem(null);
+    setDragOverIndex(null);
   };
 
-  useEffect(() => {
-    // Check if game was already completed today
-    if (hasPlayedToday()) {
-      const result = getTodaysResult();
-      setGameAlreadyCompleted(true);
-      setTodaysResult(result);
-      setGameState(prev => ({
-        ...prev,
-        gameComplete: true,
-        gameWon: result?.won || false,
-        attempts: result?.attempts || 0
-      }));
-    }
+  const handleSlotDragStart = (e: React.DragEvent, event: GameEvent) => {
+    // Find the index of this event in the timeline
+    const timelineIndex = gameState.timelineOrder.findIndex(e => e && e.name === event.name);
+    setDraggedItem({ event, sourceIndex: timelineIndex });
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
-    if (dailyEvents && dailyEvents.length === 6) {
-      // Initialize timeline with shuffled events
-      const shuffled = [...dailyEvents].sort(() => Math.random() - 0.5);
-      setGameState(prev => ({
-        ...prev,
-        currentEvents: dailyEvents,
-        timelineOrder: shuffled,
-        gameDate: new Date().toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })
-      }));
-    }
-  }, [dailyEvents]);
+  const handleReturnToPool = (slotIndex: number) => {
+    const event = gameState.timelineOrder[slotIndex];
+    if (!event) return;
+
+    const newTimelineOrder = [...gameState.timelineOrder];
+    newTimelineOrder[slotIndex] = null;
+    
+    const newCurrentEvents = [...gameState.currentEvents, event];
+    
+    setGameState(prev => ({
+      ...prev,
+      timelineOrder: newTimelineOrder,
+      currentEvents: newCurrentEvents
+    }));
+  };
 
   const handleSubmit = () => {
-    if (gameState.gameComplete) return;
+    if (!isTimelineFull(gameState.timelineOrder)) {
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
 
     const newAttempts = gameState.attempts + 1;
     const isCorrect = checkTimelineCorrect(gameState.timelineOrder);
 
     if (isCorrect) {
-      // Win condition
+      // Game won!
       const newStats = updateStats(true, newAttempts);
       setStats(newStats);
       setGameState(prev => ({
         ...prev,
         attempts: newAttempts,
-        gameWon: true,
-        gameComplete: true
+        gameComplete: true,
+        gameWon: true
       }));
-      setTimeout(() => setShowResultModal(true), 600);
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setShowResultModal(true);
+      }, 2000);
     } else if (newAttempts >= gameState.maxAttempts) {
-      // Game over condition
+      // Game lost!
       const newStats = updateStats(false, newAttempts);
       setStats(newStats);
       setGameState(prev => ({
         ...prev,
         attempts: newAttempts,
-        gameComplete: true
+        gameComplete: true,
+        gameWon: false
       }));
-      setTimeout(() => setShowResultModal(true), 400);
+      setShowResultModal(true);
     } else {
-      // Wrong answer - shake animation
-      setGameState(prev => ({ ...prev, attempts: newAttempts }));
+      // Continue playing
+      setGameState(prev => ({
+        ...prev,
+        attempts: newAttempts
+      }));
       setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 400);
+      setTimeout(() => setIsShaking(false), 500);
     }
   };
 
-  const correctOrder = getCorrectOrder(gameState.currentEvents);
+  // Check if user has already played today
+  useEffect(() => {
+    if (hasPlayedToday()) {
+      setGameAlreadyCompleted(true);
+      const result = getTodaysResult();
+      if (result) {
+        setTodaysResult(result);
+        setGameState(prev => ({
+          ...prev,
+          gameComplete: true,
+          gameWon: result.won,
+          attempts: result.attempts
+        }));
+      }
+    }
+  }, []);
+
+  // Initialize game when events are loaded
+  useEffect(() => {
+    if (dailyEvents && dailyEvents.length > 0 && !gameAlreadyCompleted) {
+      setGameState(prev => ({
+        ...prev,
+        currentEvents: [...dailyEvents]
+      }));
+    }
+  }, [dailyEvents, gameAlreadyCompleted]);
+
+  const correctOrder = dailyEvents ? getCorrectOrder(dailyEvents) : [];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading today's timeline...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: 'var(--accent-gold)' }}></div>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading today's timeline...</p>
         </div>
       </div>
     );
@@ -168,108 +210,156 @@ export function GameBoard() {
               className="p-3 rounded-xl transition-all duration-200 hover:scale-105 group"
               style={{ backgroundColor: 'var(--bg-secondary)' }}
             >
-              <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor" className="transition-colors" style={{ color: 'var(--text-secondary)' }}>
-                <rect x="2" y="12" width="3" height="6" rx="1"/>
-                <rect x="6" y="8" width="3" height="10" rx="1"/>
-                <rect x="10" y="5" width="3" height="13" rx="1"/>
-                <rect x="14" y="9" width="3" height="9" rx="1"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:stroke-yellow-400 transition-colors" style={{ color: 'var(--text-secondary)' }}>
+                <path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Z"/>
+                <path d="M19 11h-4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Z"/>
+                <path d="M5 11V7a7 7 0 0 1 14 0v4"/>
               </svg>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Game */}
-      <main className="max-w-[600px] mx-auto px-6 py-8 pb-32">
-        {/* Game Info */}
-        <div className="text-center mb-8">
-          <p className="font-heading text-xl mb-6" style={{ color: 'var(--text-primary)' }}>
-            Arrange 6 historical events in chronological order
-          </p>
-          
-          {/* Attempts Indicator */}
-          <AttemptsIndicator 
-            currentAttempts={gameState.attempts} 
-            maxAttempts={gameState.maxAttempts} 
-          />
-        </div>
-
-        {/* Event Timeline - Vertical Layout */}
-        <div className={`mb-8 ${isShaking ? 'animate-shake' : ''}`}>
-          {gameState.timelineOrder.map((event, index) => (
-            <div
-              key={index}
-              className={`drop-zone rounded-xl transition-all duration-300 ${
-                dragOverIndex === index ? 'drag-over' : ''
-              }`}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, index)}
-            >
-              {event ? (
-                <EventTile
-                  event={event}
-                  index={index}
-                  isDragging={draggedItem?.sourceIndex === index}
-                  isPositioned={true}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                />
-              ) : (
-                <div className="min-h-[72px] flex items-center justify-center border-2 border-dashed rounded-xl font-body text-sm transition-all duration-300 mx-0 mb-6" style={{ 
-                  borderColor: 'var(--bg-tertiary)', 
-                  backgroundColor: 'rgba(42, 42, 45, 0.3)',
-                  color: 'var(--text-secondary)'
-                }}>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }}></div>
-                    <span>Position {index + 1}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Submit Button */}
-        <div className="text-center mb-8">
-          {gameAlreadyCompleted ? (
-            <div className="text-center space-y-4">
-              <div className="rounded-2xl p-6 border backdrop-blur-sm" style={{ 
-                backgroundColor: 'var(--bg-secondary)', 
-                borderColor: 'var(--bg-tertiary)' 
+      <main className="max-w-[600px] mx-auto px-6 py-12">
+        {gameAlreadyCompleted && todaysResult ? (
+          <div className="text-center py-16">
+            <div className="mb-8">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl" style={{ 
+                backgroundColor: todaysResult.won ? 'var(--accent-gold)' : 'var(--bg-tertiary)' 
               }}>
-                <p className="font-heading mb-2" style={{ color: 'var(--text-primary)' }}>You've already played today!</p>
-                <p className="font-body text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Result: {todaysResult?.won ? `Solved in ${todaysResult.attempts} attempts` : 'Not solved'}
-                </p>
+                <div className={`text-3xl ${todaysResult.won ? 'text-black' : 'text-gray-300'}`}>
+                  {todaysResult.won ? '✓' : '✗'}
+                </div>
               </div>
-              <button
-                onClick={() => setShowResultModal(true)}
-                className="font-button w-full py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg mb-3"
-                style={{ 
-                  backgroundColor: 'var(--bg-tertiary)', 
-                  color: 'var(--text-primary)' 
-                }}
-              >
-                View Today's Result
-              </button>
+              <h2 className="font-title text-3xl mb-4" style={{ color: 'var(--text-primary)' }}>
+                {todaysResult.won ? 'Already completed today!' : 'Try again tomorrow!'}
+              </h2>
+              <p className="font-body text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
+                {todaysResult.won 
+                  ? `You solved today's puzzle in ${todaysResult.attempts} attempt${todaysResult.attempts === 1 ? '' : 's'}`
+                  : "You've already attempted today's puzzle"
+                }
+              </p>
             </div>
-          ) : (
+            <button
+              onClick={() => setShowResultModal(true)}
+              className="font-button py-4 px-8 rounded-xl transition-all duration-200 hover:scale-105"
+              style={{ 
+                backgroundColor: 'var(--accent-gold)',
+                color: 'black'
+              }}
+            >
+              View Timeline
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Success Message */}
+            <SuccessMessage 
+              isVisible={showSuccessMessage}
+              attempts={gameState.attempts}
+              onViewTimeline={() => setShowResultModal(true)}
+            />
+
+            {/* Attempts Indicator */}
+            <AttemptsIndicator 
+              currentAttempts={gameState.attempts} 
+              maxAttempts={gameState.maxAttempts} 
+            />
+
+            {/* Timeline Slots */}
+            <div className="space-y-4 mb-8">
+              <h2 className="font-heading text-xl text-center mb-6" style={{ color: 'var(--text-primary)' }}>
+                Arrange events in chronological order
+              </h2>
+              <div className="space-y-3">
+                {gameState.timelineOrder.map((event, index) => (
+                  <div
+                    key={index}
+                    className={`min-h-[64px] rounded-xl border-2 border-dashed transition-all duration-200 flex items-center justify-center p-4 ${
+                      dragOverIndex === index ? 'scale-105 shadow-lg' : ''
+                    } ${isShaking ? 'animate-shake' : ''}`}
+                    style={{
+                      backgroundColor: event ? 'var(--bg-secondary)' : 'transparent',
+                      borderColor: dragOverIndex === index ? 'var(--accent-gold)' : 'var(--bg-tertiary)'
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverIndex(index);
+                    }}
+                    onDragLeave={() => setDragOverIndex(null)}
+                    onDrop={(e) => handleDrop(e, index)}
+                  >
+                    {event ? (
+                      <div
+                        className="w-full cursor-grab flex items-center justify-between"
+                        draggable
+                        onDragStart={(e) => handleSlotDragStart(e, event)}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <span className="font-body flex-1" style={{ color: 'var(--text-primary)' }}>
+                          {event.name}
+                        </span>
+                        <button
+                          onClick={() => handleReturnToPool(index)}
+                          className="ml-3 p-1 rounded-full hover:bg-gray-700 transition-colors"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="font-body text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        Drop event here (position {index + 1})
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Available Events */}
+            {gameState.currentEvents.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="font-heading text-lg text-center" style={{ color: 'var(--text-primary)' }}>
+                  Available Events
+                </h3>
+                <div className="space-y-3">
+                  {gameState.currentEvents.map((event, index) => (
+                    <EventTile
+                      key={event.name}
+                      event={event}
+                      index={index}
+                      isDragging={draggedItem?.event.name === event.name}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
             <button
               onClick={handleSubmit}
               disabled={gameState.gameComplete}
-              className="font-button w-full py-5 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl text-lg disabled:cursor-not-allowed"
+              className="font-button w-full py-4 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-black"
               style={{ 
-                background: gameState.gameComplete ? 'var(--bg-tertiary)' : 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))',
-                color: gameState.gameComplete ? 'var(--text-secondary)' : '#1A1A1D',
-                boxShadow: gameState.gameComplete ? 'none' : '0 8px 32px rgba(212, 175, 55, 0.3)'
+                background: gameState.gameComplete 
+                  ? 'var(--bg-tertiary)' 
+                  : 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))',
+                boxShadow: gameState.gameComplete 
+                  ? 'none' 
+                  : '0 8px 32px rgba(212, 175, 55, 0.3)'
               }}
             >
               {gameState.gameComplete ? 'Game Complete' : 'Submit Timeline'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </main>
 
       {/* Sticky Footer - Only show after game completion */}
