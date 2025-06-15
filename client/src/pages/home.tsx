@@ -47,7 +47,7 @@ export default function Home() {
         {/* Play Button */}
         <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
           <Link href="/game">
-            <button className="font-button w-full text-black py-6 px-8 rounded-2xl text-xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl" style={{ background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))', boxShadow: '0 8px 32px rgba(212, 175, 55, 0.3)' }} onMouseEnter={(e) => e.target.style.boxShadow = '0 12px 40px rgba(212, 175, 55, 0.4)'} onMouseLeave={(e) => e.target.style.boxShadow = '0 8px 32px rgba(212, 175, 55, 0.3)'}>
+            <button className="font-button w-full text-black py-6 px-8 rounded-2xl text-xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl" style={{ background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))', boxShadow: '0 8px 32px rgba(212, 175, 55, 0.3)' }} onMouseEnter={(e) => (e.target as HTMLElement).style.boxShadow = '0 12px 40px rgba(212, 175, 55, 0.4)'} onMouseLeave={(e) => (e.target as HTMLElement).style.boxShadow = '0 8px 32px rgba(212, 175, 55, 0.3)'}>
               Play
             </button>
           </Link>
