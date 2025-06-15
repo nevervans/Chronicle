@@ -91,7 +91,6 @@ export function GameBoard() {
       setShowSuccessMessage(true);
       setTimeout(() => {
         setShowSuccessMessage(false);
-        setShowResultModal(true);
       }, 2000);
     } else if (newAttempts >= gameState.maxAttempts) {
       // Game lost!
@@ -103,7 +102,7 @@ export function GameBoard() {
         gameComplete: true,
         gameWon: false
       }));
-      setShowResultModal(true);
+      // Don't show result modal, display timeline inline
     } else {
       // Continue playing
       setGameState(prev => ({
@@ -202,24 +201,35 @@ export function GameBoard() {
                 }
               </p>
             </div>
-            <button
-              onClick={() => setShowResultModal(true)}
-              className="font-button py-4 px-8 rounded-xl transition-all duration-200 hover:scale-105"
-              style={{ 
-                backgroundColor: 'var(--accent-gold)',
-                color: 'black'
-              }}
-            >
-              View Timeline
-            </button>
+            {/* Show correct timeline for completed game */}
+            <div className="rounded-2xl p-6 mb-8 border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--bg-secondary)' }}>
+              <h4 className="font-heading text-lg mb-4" style={{ color: 'var(--text-primary)' }}>Correct Timeline:</h4>
+              <div className="space-y-4 relative">
+                {/* Timeline line */}
+                <div className="absolute left-4 top-4 bottom-4 w-0.5" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                
+                {correctOrder.map((event, index) => (
+                  <div key={event.name} className="flex items-start relative">
+                    {/* Timeline dot */}
+                    <div className="w-2 h-2 rounded-full mt-2 mr-4 relative z-10" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                    
+                    {/* Event content */}
+                    <div className="flex-1 font-body">
+                      <div className="font-semibold mb-1" style={{ color: 'var(--accent-gold)' }}>{event.year}</div>
+                      <div style={{ color: 'var(--text-primary)' }}>{event.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-8 pb-24">
             {/* Success Message */}
             <SuccessMessage 
               isVisible={showSuccessMessage}
               attempts={gameState.attempts}
-              onViewTimeline={() => setShowResultModal(true)}
+              onViewTimeline={() => {}}
             />
 
             {/* Attempts Indicator */}
@@ -228,52 +238,95 @@ export function GameBoard() {
               maxAttempts={gameState.maxAttempts} 
             />
 
-            {/* Timeline - All events in order */}
-            <div className="space-y-4 mb-8">
-              <h2 className="font-heading text-xl text-center mb-6" style={{ color: 'var(--text-primary)' }}>
-                Arrange events in chronological order
-              </h2>
-              <div className="space-y-3">
-                {gameState.currentEvents.map((event, index) => (
-                  <div
-                    key={event.name}
-                    className={`transition-all duration-200 ${isShaking ? 'animate-shake' : ''}`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setDragOverIndex(index);
-                    }}
-                    onDragLeave={() => setDragOverIndex(null)}
-                    onDrop={(e) => handleDrop(e, index)}
-                  >
-                    <EventTile
-                      event={event}
-                      index={index}
-                      isDragging={draggedItem?.event.name === event.name}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                      className={dragOverIndex === index ? 'border-2 border-dashed' : ''}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {gameState.gameComplete ? (
+              /* Show correct timeline after completion */
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  {gameState.gameWon ? (
+                    <div className="mb-4">
+                      <div className="animate-checkmark mb-4" style={{ color: 'var(--accent-gold)' }}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mx-auto">
+                          <polyline points="20,6 9,17 4,12"/>
+                        </svg>
+                      </div>
+                      <h3 className="font-title text-2xl mb-3" style={{ color: 'var(--text-primary)' }}>
+                        🎉 You solved it in {gameState.attempts} attempt{gameState.attempts === 1 ? '' : 's'}!
+                      </h3>
+                    </div>
+                  ) : (
+                    <h3 className="font-title text-2xl mb-6" style={{ color: 'var(--text-primary)' }}>
+                      Game Complete
+                    </h3>
+                  )}
+                </div>
 
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={gameState.gameComplete}
-              className="font-button w-full py-4 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-black"
-              style={{ 
-                background: gameState.gameComplete 
-                  ? 'var(--bg-tertiary)' 
-                  : 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))',
-                boxShadow: gameState.gameComplete 
-                  ? 'none' 
-                  : '0 8px 32px rgba(212, 175, 55, 0.3)'
-              }}
-            >
-              {gameState.gameComplete ? 'Game Complete' : 'Submit Timeline'}
-            </button>
+                <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--bg-secondary)' }}>
+                  <h4 className="font-heading text-lg mb-4" style={{ color: 'var(--text-primary)' }}>Correct Timeline:</h4>
+                  <div className="space-y-4 relative">
+                    {/* Timeline line */}
+                    <div className="absolute left-4 top-4 bottom-4 w-0.5" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                    
+                    {correctOrder.map((event, index) => (
+                      <div key={event.name} className="flex items-start relative">
+                        {/* Timeline dot */}
+                        <div className="w-2 h-2 rounded-full mt-2 mr-4 relative z-10" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                        
+                        {/* Event content */}
+                        <div className="flex-1 font-body">
+                          <div className="font-semibold mb-1" style={{ color: 'var(--accent-gold)' }}>{event.year}</div>
+                          <div style={{ color: 'var(--text-primary)' }}>{event.name}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Show game interface during play */
+              <div className="space-y-6">
+                {/* Timeline - All events in order */}
+                <div className="space-y-4 mb-8">
+                  <h2 className="font-heading text-xl text-center mb-6" style={{ color: 'var(--text-primary)' }}>
+                    Arrange events in chronological order
+                  </h2>
+                  <div className="space-y-3">
+                    {gameState.currentEvents.map((event, index) => (
+                      <div
+                        key={event.name}
+                        className={`transition-all duration-200 ${isShaking ? 'animate-shake' : ''}`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragOverIndex(index);
+                        }}
+                        onDragLeave={() => setDragOverIndex(null)}
+                        onDrop={(e) => handleDrop(e, index)}
+                      >
+                        <EventTile
+                          event={event}
+                          index={index}
+                          isDragging={draggedItem?.event.name === event.name}
+                          onDragStart={handleDragStart}
+                          onDragEnd={handleDragEnd}
+                          className={dragOverIndex === index ? 'border-2 border-dashed' : ''}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  onClick={handleSubmit}
+                  className="font-button w-full py-4 rounded-xl transition-all duration-200 hover:scale-105 text-black"
+                  style={{ 
+                    background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover))',
+                    boxShadow: '0 8px 32px rgba(212, 175, 55, 0.3)'
+                  }}
+                >
+                  Submit Timeline
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -287,7 +340,15 @@ export function GameBoard() {
           <div className="max-w-[600px] mx-auto px-6 py-4">
             <div className="flex justify-center space-x-4">
               <button 
-                onClick={() => setShowResultModal(true)}
+                onClick={() => {
+                  // Share functionality
+                  const shareText = `Chronicle Timeline Game\n${gameState.gameWon ? `Solved in ${gameState.attempts} attempts!` : 'Try again tomorrow'}\n\nPlay daily at: ${window.location.origin}`;
+                  if (navigator.share) {
+                    navigator.share({ title: 'Chronicle Timeline', text: shareText });
+                  } else {
+                    navigator.clipboard.writeText(shareText);
+                  }
+                }}
                 className="font-button flex-1 py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                 style={{ 
                   backgroundColor: 'var(--bg-tertiary)', 
@@ -329,16 +390,7 @@ export function GameBoard() {
         lastGameAttempts={gameState.attempts}
       />
 
-      <ResultModal
-        isOpen={showResultModal}
-        onClose={() => {
-          setShowResultModal(false);
-          setShowStatsModal(true);
-        }}
-        won={gameState.gameWon}
-        attempts={gameState.attempts}
-        correctOrder={correctOrder}
-      />
+      {/* ResultModal removed - timeline now shown inline */}
     </div>
   );
 }
