@@ -4,6 +4,7 @@ import { EventTile } from "./EventTile";
 import { AttemptsIndicator } from "./AttemptsIndicator";
 import { StatsModal } from "./StatsModal";
 import { ResultModal } from "./ResultModal";
+import { SuccessMessage } from "./SuccessMessage";
 import { checkTimelineCorrect, getCorrectOrder, isTimelineFull } from "@/lib/gameLogic";
 import { updateStats, loadStats, hasPlayedToday, getTodaysResult, generateShareText } from "@/lib/storage";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ export function GameBoard() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [stats, setStats] = useState<GameStats>(loadStats());
   const [isShaking, setIsShaking] = useState(false);
   const [gameAlreadyCompleted, setGameAlreadyCompleted] = useState(false);

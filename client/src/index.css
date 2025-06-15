@@ -159,6 +159,23 @@
     100% { transform: translateY(-200px) rotate(360deg); opacity: 0; }
   }
 
+  @keyframes checkmark {
+    0% { transform: scale(0) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+    100% { transform: scale(1) rotate(360deg); opacity: 1; }
+  }
+
+  @keyframes success-pulse {
+    0%, 100% { 
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+      transform: scale(1.05);
+    }
+  }
+
   .animate-shake {
     animation: shake 0.5s ease-in-out;
   }
@@ -185,6 +202,14 @@
 
   .animate-confetti {
     animation: confetti 1s ease-out forwards;
+  }
+
+  .animate-checkmark {
+    animation: checkmark 0.6s ease-out forwards;
+  }
+
+  .animate-success-pulse {
+    animation: success-pulse 2s ease-in-out infinite;
   }
 
   /* Event card styles - Enhanced design */
