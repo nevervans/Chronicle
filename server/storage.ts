@@ -90,20 +90,100 @@ export class DatabaseStorage implements IStorage {
     return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
   }
 
-  private shuffleArray<T>(array: T[], seed: number): T[] {
-    // Simple seeded random number generator
+  private selectDiverseEvents(allEvents: Event[], date: string): Event[] {
+    const seed = this.dateToSeed(date);
+    let selectedEvents: Event[] = [];
+    
+    // Seeded random number generator
     let random = seed;
     function seededRandom(): number {
       random = (random * 9301 + 49297) % 233280;
       return random / 233280;
     }
-
-    const result = [...array];
-    for (let i = result.length - 1; i > 0; i--) {
-      const j = Math.floor(seededRandom() * (i + 1));
-      [result[i], result[j]] = [result[j], result[i]];
+    
+    // Distribute across different centuries for diversity
+    const centuries = this.getDistributedCenturies(6);
+    
+    for (let i = 0; i < 6; i++) {
+      const targetCentury = centuries[i];
+      const centuryEvents = allEvents.filter(e => 
+        Math.floor(e.year / 100) === targetCentury &&
+        !selectedEvents.includes(e)
+      );
+      
+      if (centuryEvents.length > 0) {
+        // Prefer less used events for better variety
+        const sortedEvents = centuryEvents.sort((a, b) => 
+          a.usedInPuzzlesCount - b.usedInPuzzlesCount
+        );
+        
+        const randomIndex = Math.floor(seededRandom() * Math.min(3, sortedEvents.length));
+        selectedEvents.push(sortedEvents[randomIndex]);
+      }
     }
-    return result;
+    
+    // Fill remaining slots if needed
+    while (selectedEvents.length < 6) {
+      const availableEvents = allEvents.filter(e => !selectedEvents.includes(e));
+      if (availableEvents.length === 0) break;
+      
+      const randomIndex = Math.floor(seededRandom() * availableEvents.length);
+      selectedEvents.push(availableEvents[randomIndex]);
+    }
+    
+    return selectedEvents;
+  }
+
+  private getDistributedCenturies(count: number): number[] {
+    // Distribute across different centuries (10th to 21st century)
+    const centuries = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+    const selected = [];
+    
+    for (let i = 0; i < count; i++) {
+      const index = Math.floor((i / count) * centuries.length);
+      selected.push(centuries[index]);
+    }
+    
+    return selected;
+  }
+
+  private categorizeEvent(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('war') || name.includes('battle') || name.includes('invasion')) return 'War';
+    if (name.includes('discover') || name.includes('invent') || name.includes('first')) return 'Discovery';
+    if (name.includes('empire') || name.includes('king') || name.includes('independence')) return 'Politics';
+    if (name.includes('art') || name.includes('music') || name.includes('literature')) return 'Culture';
+    if (name.includes('engine') || name.includes('computer') || name.includes('internet')) return 'Technology';
+    return 'Science';
+  }
+
+  private regionizeEvent(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('europe') || name.includes('france') || name.includes('england') || name.includes('germany')) return 'Europe';
+    if (name.includes('china') || name.includes('japan') || name.includes('asia') || name.includes('india')) return 'Asia';
+    if (name.includes('america') || name.includes('usa') || name.includes('mexico') || name.includes('brazil')) return 'Americas';
+    if (name.includes('africa') || name.includes('egypt') || name.includes('south africa')) return 'Africa';
+    return 'Global';
+  }
+
+  private determineDifficulty(year: number): string {
+    if (year < 1000) return 'hard';
+    if (year < 1500) return 'medium';
+    if (year < 1800) return 'medium';
+    return 'easy';
+  }
+
+  private generateTags(eventName: string): string[] {
+    const tags = [];
+    const name = eventName.toLowerCase();
+    
+    if (name.includes('war')) tags.push('war', 'conflict');
+    if (name.includes('discover')) tags.push('discovery', 'exploration');
+    if (name.includes('invent')) tags.push('invention', 'technology');
+    if (name.includes('first')) tags.push('first', 'milestone');
+    if (name.includes('revolution')) tags.push('revolution', 'change');
+    
+    return tags.length > 0 ? tags : ['history'];
   }
 }
 
