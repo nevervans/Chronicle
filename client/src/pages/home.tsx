@@ -7,7 +7,9 @@ export default function Home() {
     day: 'numeric' 
   });
 
-  const gameNumber = Math.floor((Date.now() - new Date('2024-01-01').getTime()) / (1000 * 60 * 60 * 24));
+  // Start counting from June 19, 2025 as puzzle #1
+  const startDate = new Date('2025-06-19').getTime();
+  const gameNumber = Math.floor((Date.now() - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
