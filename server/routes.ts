@@ -73,59 +73,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes for puzzle scheduling
-  app.get("/api/admin/scheduled-puzzles", async (req, res) => {
+  // Admin routes for puzzle management
+  app.get("/api/admin/puzzles", async (req, res) => {
     try {
-      const fromDate = req.query.from as string;
-      const puzzles = await storage.getUpcomingScheduledPuzzles(fromDate);
+      const puzzles = await storage.getDailyPuzzlesForAdmin();
       res.json({ puzzles });
     } catch (error) {
-      console.error("Error fetching scheduled puzzles:", error);
-      res.status(500).json({ error: "Failed to fetch scheduled puzzles" });
+      console.error("Error fetching puzzles:", error);
+      res.status(500).json({ error: "Failed to fetch puzzles" });
     }
   });
 
-  app.post("/api/admin/scheduled-puzzles", async (req, res) => {
+  app.post("/api/admin/puzzles", async (req, res) => {
     try {
-      const { date, eventIds, title, description } = req.body;
+      const { date, events, title, description } = req.body;
       
-      if (!date || !eventIds || !Array.isArray(eventIds) || eventIds.length !== 6) {
-        return res.status(400).json({ error: "Date and exactly 6 event IDs are required" });
+      if (!date || !events || !Array.isArray(events) || events.length !== 6) {
+        return res.status(400).json({ error: "Date and exactly 6 events are required" });
       }
 
-      const puzzle = await storage.createScheduledPuzzle(date, eventIds, title, description);
+      const puzzle = await storage.createDailyPuzzle(date, events, title, description);
       res.json({ puzzle });
     } catch (error) {
-      console.error("Error creating scheduled puzzle:", error);
-      res.status(500).json({ error: "Failed to create scheduled puzzle" });
+      console.error("Error creating puzzle:", error);
+      res.status(500).json({ error: "Failed to create puzzle" });
     }
   });
 
-  app.put("/api/admin/scheduled-puzzles/:id", async (req, res) => {
+  app.put("/api/admin/puzzles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { eventIds, title, description } = req.body;
+      const { events, title, description } = req.body;
       
-      if (!eventIds || !Array.isArray(eventIds) || eventIds.length !== 6) {
-        return res.status(400).json({ error: "Exactly 6 event IDs are required" });
+      if (!events || !Array.isArray(events) || events.length !== 6) {
+        return res.status(400).json({ error: "Exactly 6 events are required" });
       }
 
-      const puzzle = await storage.updateScheduledPuzzle(id, eventIds, title, description);
+      const puzzle = await storage.updateDailyPuzzle(id, events, title, description);
       res.json({ puzzle });
     } catch (error) {
-      console.error("Error updating scheduled puzzle:", error);
-      res.status(500).json({ error: "Failed to update scheduled puzzle" });
+      console.error("Error updating puzzle:", error);
+      res.status(500).json({ error: "Failed to update puzzle" });
     }
   });
 
-  app.delete("/api/admin/scheduled-puzzles/:id", async (req, res) => {
+  app.delete("/api/admin/puzzles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteScheduledPuzzle(id);
+      await storage.deleteDailyPuzzle(id);
       res.json({ success: true });
     } catch (error) {
-      console.error("Error deleting scheduled puzzle:", error);
-      res.status(500).json({ error: "Failed to delete scheduled puzzle" });
+      console.error("Error deleting puzzle:", error);
+      res.status(500).json({ error: "Failed to delete puzzle" });
     }
   });
 

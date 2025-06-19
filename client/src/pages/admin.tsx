@@ -8,23 +8,33 @@ interface Event {
   year: number;
 }
 
-interface ScheduledPuzzle {
+interface DailyPuzzle {
   id: number;
   date: string;
-  eventIds: number[];
   title?: string;
   description?: string;
-  isActive: boolean;
+  event1Name: string;
+  event1Year: number;
+  event2Name: string;
+  event2Year: number;
+  event3Name: string;
+  event3Year: number;
+  event4Name: string;
+  event4Year: number;
+  event5Name: string;
+  event5Year: number;
+  event6Name: string;
+  event6Year: number;
+  isScheduled: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export default function Admin() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedEvents, setSelectedEvents] = useState<number[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [puzzleTitle, setPuzzleTitle] = useState("");
   const [puzzleDescription, setPuzzleDescription] = useState("");
-  const [editingPuzzle, setEditingPuzzle] = useState<ScheduledPuzzle | null>(null);
+  const [editingPuzzle, setEditingPuzzle] = useState<DailyPuzzle | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -33,13 +43,13 @@ export default function Admin() {
     queryKey: ["/api/admin/events"],
   });
 
-  // Fetch scheduled puzzles
-  const { data: puzzlesData, refetch: refetchPuzzles } = useQuery({
-    queryKey: ["/api/admin/scheduled-puzzles"],
+  // Fetch daily puzzles
+  const { data: puzzlesData } = useQuery({
+    queryKey: ["/api/admin/puzzles"],
   });
 
   const events: Event[] = eventsData?.events || [];
-  const puzzles: ScheduledPuzzle[] = puzzlesData?.puzzles || [];
+  const puzzles: DailyPuzzle[] = puzzlesData?.puzzles || [];
 
   // Create puzzle mutation
   const createPuzzleMutation = useMutation({

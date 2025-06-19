@@ -1,4 +1,4 @@
-import { events, dailyPuzzles, scheduledPuzzles, type Event, type InsertEvent, type DailyPuzzle, type ScheduledPuzzle } from "@shared/schema";
+import { events, dailyPuzzles, type Event, type InsertEvent, type DailyPuzzle } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, inArray } from "drizzle-orm";
 import eventsData from "./data/events.json";
@@ -8,11 +8,10 @@ export interface IStorage {
   getDailyEvents(date: string): Promise<Event[]>;
   initializeEvents(): Promise<void>;
   generateDailyPuzzle(date: string): Promise<Event[]>;
-  getScheduledPuzzle(date: string): Promise<ScheduledPuzzle | null>;
-  createScheduledPuzzle(date: string, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle>;
-  updateScheduledPuzzle(id: number, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle>;
-  deleteScheduledPuzzle(id: number): Promise<void>;
-  getUpcomingScheduledPuzzles(fromDate?: string): Promise<ScheduledPuzzle[]>;
+  createDailyPuzzle(date: string, events: Event[], title?: string, description?: string): Promise<DailyPuzzle>;
+  getDailyPuzzlesForAdmin(): Promise<DailyPuzzle[]>;
+  updateDailyPuzzle(id: number, events: Event[], title?: string, description?: string): Promise<DailyPuzzle>;
+  deleteDailyPuzzle(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {

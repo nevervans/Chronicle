@@ -14,37 +14,35 @@ export const events = pgTable("events", {
   usedInPuzzlesCount: integer("used_in_puzzles_count").notNull().default(0),
 });
 
-// Daily puzzles table for caching
+// Simplified daily puzzles table - stores both scheduled and random puzzles
 export const dailyPuzzles = pgTable("daily_puzzles", {
   id: serial("id").primaryKey(),
   date: text("date").notNull().unique(),
-  eventIds: jsonb("event_ids").$type<number[]>().notNull(),
-  correctOrder: jsonb("correct_order").$type<number[]>().notNull(),
-  puzzleId: integer("puzzle_id").notNull(),
-});
-
-// Scheduled puzzles table for pre-planned events
-export const scheduledPuzzles = pgTable("scheduled_puzzles", {
-  id: serial("id").primaryKey(),
-  date: text("date").notNull().unique(),
-  eventIds: jsonb("event_ids").$type<number[]>().notNull(),
   title: text("title"),
   description: text("description"),
-  isActive: boolean("is_active").default(true),
+  event1Name: text("event1_name").notNull(),
+  event1Year: integer("event1_year").notNull(),
+  event2Name: text("event2_name").notNull(),
+  event2Year: integer("event2_year").notNull(),
+  event3Name: text("event3_name").notNull(),
+  event3Year: integer("event3_year").notNull(),
+  event4Name: text("event4_name").notNull(),
+  event4Year: integer("event4_year").notNull(),
+  event5Name: text("event5_name").notNull(),
+  event5Year: integer("event5_year").notNull(),
+  event6Name: text("event6_name").notNull(),
+  event6Year: integer("event6_year").notNull(),
+  isScheduled: boolean("is_scheduled").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertEventSchema = createInsertSchema(events);
 export const insertDailyPuzzleSchema = createInsertSchema(dailyPuzzles);
-export const insertScheduledPuzzleSchema = createInsertSchema(scheduledPuzzles);
 
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Event = typeof events.$inferSelect;
 export type InsertDailyPuzzle = z.infer<typeof insertDailyPuzzleSchema>;
 export type DailyPuzzle = typeof dailyPuzzles.$inferSelect;
-export type InsertScheduledPuzzle = z.infer<typeof insertScheduledPuzzleSchema>;
-export type ScheduledPuzzle = typeof scheduledPuzzles.$inferSelect;
 
 // Game-related schemas
 export const gameResultSchema = z.object({
