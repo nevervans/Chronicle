@@ -1,4 +1,4 @@
-import { events, dailyPuzzles, type Event, type InsertEvent, type DailyPuzzle } from "@shared/schema";
+import { events, dailyPuzzles, scheduledPuzzles, type Event, type InsertEvent, type DailyPuzzle, type ScheduledPuzzle } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, inArray } from "drizzle-orm";
 import eventsData from "./data/events.json";
@@ -42,17 +42,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDailyEvents(date: string): Promise<Event[]> {
-    // Check if we already have a cached daily puzzle for this date
-    const cachedPuzzle = await db.select().from(dailyPuzzles).where(eq(dailyPuzzles.date, date));
-    
-    if (cachedPuzzle.length > 0) {
-      // Return cached events
-      const puzzle = cachedPuzzle[0];
-      const puzzleEvents = await db.select().from(events).where(inArray(events.id, puzzle.eventIds));
-      return puzzleEvents;
-    }
-    
-    // Generate new daily puzzle with diversity
     return await this.generateDailyPuzzle(date);
   }
 
@@ -88,6 +77,63 @@ export class DatabaseStorage implements IStorage {
     );
     
     return selectedEvents;
+  }
+
+  async getScheduledPuzzle(date: string): Promise<ScheduledPuzzle | null> {
+    const [scheduledPuzzle] = await db
+      .select()
+      .from(scheduledPuzzles)
+      .where(eq(scheduledPuzzles.date, date));
+    
+    return scheduledPuzzle || null;
+  }
+
+  async createScheduledPuzzle(date: string, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle> {
+    const [newPuzzle] = await db
+      .insert(scheduledPuzzles)
+      .values({
+        date,
+        eventIds,
+        title,
+        description,
+        isActive: true,
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return newPuzzle;
+  }
+
+  async updateScheduledPuzzle(id: number, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle> {
+    const [updatedPuzzle] = await db
+      .update(scheduledPuzzles)
+      .set({
+        eventIds,
+        title,
+        description,
+        updatedAt: new Date()
+      })
+      .where(eq(scheduledPuzzles.id, id))
+      .returning();
+    
+    return updatedPuzzle;
+  }
+
+  async deleteScheduledPuzzle(id: number): Promise<void> {
+    await db
+      .update(scheduledPuzzles)
+      .set({ isActive: false })
+      .where(eq(scheduledPuzzles.id, id));
+  }
+
+  async getUpcomingScheduledPuzzles(fromDate?: string): Promise<ScheduledPuzzle[]> {
+    const startDate = fromDate || new Date().toISOString().split('T')[0];
+    
+    return db
+      .select()
+      .from(scheduledPuzzles)
+      .where(eq(scheduledPuzzles.isActive, true))
+      .orderBy(scheduledPuzzles.date);
   }
 
   private dateToSeed(dateString: string): number {

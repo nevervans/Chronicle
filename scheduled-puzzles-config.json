@@ -1,0 +1,44 @@
+{
+  "scheduledPuzzles": [
+    {
+      "date": "2025-06-20",
+      "title": "World War II Timeline",
+      "description": "Key events from the Second World War",
+      "eventNames": [
+        "World War II begins",
+        "Pearl Harbor attack",
+        "D-Day landings",
+        "Hiroshima bombing",
+        "World War II ends",
+        "Holocaust liberation"
+      ]
+    },
+    {
+      "date": "2025-06-21",
+      "title": "Space Race Milestones",
+      "description": "Major achievements in space exploration",
+      "eventNames": [
+        "Sputnik launched",
+        "First human in space",
+        "Moon landing",
+        "Hubble Space Telescope",
+        "Mars rovers land",
+        "International Space Station"
+      ]
+    },
+    {
+      "date": "2025-06-22",
+      "title": "Technology Revolution",
+      "description": "Game-changing technological innovations",
+      "eventNames": [
+        "Internet created",
+        "World Wide Web",
+        "iPhone released",
+        "Personal computer invented",
+        "Facebook founded",
+        "Google founded"
+      ]
+    }
+  ],
+  "instructions": "This file contains example scheduled puzzles. To add new puzzles, either:\n1. Use the admin interface at /admin\n2. Add entries to this file and import them via the admin panel\n\nEach puzzle requires:\n- date: YYYY-MM-DD format\n- eventNames: Array of exactly 6 event names that exist in the database\n- title: Optional descriptive title\n- description: Optional theme description"
+}

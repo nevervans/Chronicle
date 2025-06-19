@@ -44,11 +44,13 @@ export default function Admin() {
   // Create puzzle mutation
   const createPuzzleMutation = useMutation({
     mutationFn: async (data: { date: string; eventIds: number[]; title?: string; description?: string }) => {
-      return apiRequest("/api/admin/scheduled-puzzles", {
+      const response = await fetch("/api/admin/scheduled-puzzles", {
         method: "POST",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" }
       });
+      if (!response.ok) throw new Error('Failed to create puzzle');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/scheduled-puzzles"] });
@@ -59,11 +61,13 @@ export default function Admin() {
   // Update puzzle mutation
   const updatePuzzleMutation = useMutation({
     mutationFn: async ({ id, ...data }: { id: number; eventIds: number[]; title?: string; description?: string }) => {
-      return apiRequest(`/api/admin/scheduled-puzzles/${id}`, {
+      const response = await fetch(`/api/admin/scheduled-puzzles/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" }
       });
+      if (!response.ok) throw new Error('Failed to update puzzle');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/scheduled-puzzles"] });
@@ -74,9 +78,11 @@ export default function Admin() {
   // Delete puzzle mutation
   const deletePuzzleMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/scheduled-puzzles/${id}`, {
+      const response = await fetch(`/api/admin/scheduled-puzzles/${id}`, {
         method: "DELETE"
       });
+      if (!response.ok) throw new Error('Failed to delete puzzle');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/scheduled-puzzles"] });

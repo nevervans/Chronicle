@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -21,6 +21,18 @@ export const dailyPuzzles = pgTable("daily_puzzles", {
   eventIds: jsonb("event_ids").$type<number[]>().notNull(),
   correctOrder: jsonb("correct_order").$type<number[]>().notNull(),
   puzzleId: integer("puzzle_id").notNull(),
+});
+
+// Scheduled puzzles table for pre-planned events
+export const scheduledPuzzles = pgTable("scheduled_puzzles", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull().unique(),
+  eventIds: jsonb("event_ids").$type<number[]>().notNull(),
+  title: text("title"),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertEventSchema = createInsertSchema(events);
