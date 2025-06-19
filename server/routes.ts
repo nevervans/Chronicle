@@ -73,6 +73,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes for puzzle scheduling
+  app.get("/api/admin/scheduled-puzzles", async (req, res) => {
+    try {
+      const fromDate = req.query.from as string;
+      const puzzles = await storage.getUpcomingScheduledPuzzles(fromDate);
+      res.json({ puzzles });
+    } catch (error) {
+      console.error("Error fetching scheduled puzzles:", error);
+      res.status(500).json({ error: "Failed to fetch scheduled puzzles" });
+    }
+  });
+
+  app.post("/api/admin/scheduled-puzzles", async (req, res) => {
+    try {
+      const { date, eventIds, title, description } = req.body;
+      
+      if (!date || !eventIds || !Array.isArray(eventIds) || eventIds.length !== 6) {
+        return res.status(400).json({ error: "Date and exactly 6 event IDs are required" });
+      }
+
+      const puzzle = await storage.createScheduledPuzzle(date, eventIds, title, description);
+      res.json({ puzzle });
+    } catch (error) {
+      console.error("Error creating scheduled puzzle:", error);
+      res.status(500).json({ error: "Failed to create scheduled puzzle" });
+    }
+  });
+
+  app.put("/api/admin/scheduled-puzzles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { eventIds, title, description } = req.body;
+      
+      if (!eventIds || !Array.isArray(eventIds) || eventIds.length !== 6) {
+        return res.status(400).json({ error: "Exactly 6 event IDs are required" });
+      }
+
+      const puzzle = await storage.updateScheduledPuzzle(id, eventIds, title, description);
+      res.json({ puzzle });
+    } catch (error) {
+      console.error("Error updating scheduled puzzle:", error);
+      res.status(500).json({ error: "Failed to update scheduled puzzle" });
+    }
+  });
+
+  app.delete("/api/admin/scheduled-puzzles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteScheduledPuzzle(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting scheduled puzzle:", error);
+      res.status(500).json({ error: "Failed to delete scheduled puzzle" });
+    }
+  });
+
+  app.get("/api/admin/events", async (req, res) => {
+    try {
+      const events = await storage.getAllEvents();
+      res.json({ events });
+    } catch (error) {
+      console.error("Error fetching all events:", error);
+      res.status(500).json({ error: "Failed to fetch events" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -8,6 +8,12 @@ Chronicle is a daily historical timeline puzzle game where players arrange histo
 
 The application follows a monorepo structure with separate client and server directories, sharing common code through a shared module.
 
+### Pre-Scheduling System
+- **Admin Interface**: Web-based admin panel at `/admin` for creating and managing scheduled puzzles
+- **Database Table**: `scheduled_puzzles` table for storing handpicked daily events
+- **Priority Logic**: System checks for scheduled puzzles first, then falls back to random generation
+- **Configuration**: Example puzzles provided in `scheduled-puzzles-config.json` for reference
+
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
 - **Routing**: Wouter for client-side routing
@@ -102,6 +108,8 @@ The application follows a monorepo structure with separate client and server dir
 - June 15, 2025: Implemented MongoDB-style backend with enhanced schema (category, region, difficulty, tags, usage tracking)
 - June 15, 2025: Added daily puzzle caching system and /api/puzzle endpoint with diversity algorithms
 - June 15, 2025: Restored original timeline ordering mechanics (single vertical list reordering vs individual drop boxes)
+- June 19, 2025: Implemented puzzle pre-scheduling system with admin interface at /admin
+- June 19, 2025: Fixed mobile drag functionality and enhanced feedback system with Wordle-style emoji sharing
 
 ## User Preferences
 
