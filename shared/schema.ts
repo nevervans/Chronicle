@@ -25,11 +25,14 @@ export const dailyPuzzles = pgTable("daily_puzzles", {
 
 export const insertEventSchema = createInsertSchema(events);
 export const insertDailyPuzzleSchema = createInsertSchema(dailyPuzzles);
+export const insertScheduledPuzzleSchema = createInsertSchema(scheduledPuzzles);
 
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Event = typeof events.$inferSelect;
 export type InsertDailyPuzzle = z.infer<typeof insertDailyPuzzleSchema>;
 export type DailyPuzzle = typeof dailyPuzzles.$inferSelect;
+export type InsertScheduledPuzzle = z.infer<typeof insertScheduledPuzzleSchema>;
+export type ScheduledPuzzle = typeof scheduledPuzzles.$inferSelect;
 
 // Game-related schemas
 export const gameResultSchema = z.object({

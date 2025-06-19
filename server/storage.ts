@@ -8,6 +8,11 @@ export interface IStorage {
   getDailyEvents(date: string): Promise<Event[]>;
   initializeEvents(): Promise<void>;
   generateDailyPuzzle(date: string): Promise<Event[]>;
+  getScheduledPuzzle(date: string): Promise<ScheduledPuzzle | null>;
+  createScheduledPuzzle(date: string, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle>;
+  updateScheduledPuzzle(id: number, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle>;
+  deleteScheduledPuzzle(id: number): Promise<void>;
+  getUpcomingScheduledPuzzles(fromDate?: string): Promise<ScheduledPuzzle[]>;
 }
 
 export class DatabaseStorage implements IStorage {
