@@ -78,63 +78,6 @@ export class DatabaseStorage implements IStorage {
     return selectedEvents;
   }
 
-  async getScheduledPuzzle(date: string): Promise<ScheduledPuzzle | null> {
-    const [scheduledPuzzle] = await db
-      .select()
-      .from(scheduledPuzzles)
-      .where(eq(scheduledPuzzles.date, date));
-    
-    return scheduledPuzzle || null;
-  }
-
-  async createScheduledPuzzle(date: string, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle> {
-    const [newPuzzle] = await db
-      .insert(scheduledPuzzles)
-      .values({
-        date,
-        eventIds,
-        title,
-        description,
-        isActive: true,
-        updatedAt: new Date()
-      })
-      .returning();
-    
-    return newPuzzle;
-  }
-
-  async updateScheduledPuzzle(id: number, eventIds: number[], title?: string, description?: string): Promise<ScheduledPuzzle> {
-    const [updatedPuzzle] = await db
-      .update(scheduledPuzzles)
-      .set({
-        eventIds,
-        title,
-        description,
-        updatedAt: new Date()
-      })
-      .where(eq(scheduledPuzzles.id, id))
-      .returning();
-    
-    return updatedPuzzle;
-  }
-
-  async deleteScheduledPuzzle(id: number): Promise<void> {
-    await db
-      .update(scheduledPuzzles)
-      .set({ isActive: false })
-      .where(eq(scheduledPuzzles.id, id));
-  }
-
-  async getUpcomingScheduledPuzzles(fromDate?: string): Promise<ScheduledPuzzle[]> {
-    const startDate = fromDate || new Date().toISOString().split('T')[0];
-    
-    return db
-      .select()
-      .from(scheduledPuzzles)
-      .where(eq(scheduledPuzzles.isActive, true))
-      .orderBy(scheduledPuzzles.date);
-  }
-
   private dateToSeed(dateString: string): number {
     const date = new Date(dateString);
     return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
