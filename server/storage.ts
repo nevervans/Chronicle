@@ -45,37 +45,112 @@ export class DatabaseStorage implements IStorage {
   }
 
   async generateDailyPuzzle(date: string): Promise<Event[]> {
+    // Check if we already have a puzzle for this date
+    const [existingPuzzle] = await db
+      .select()
+      .from(dailyPuzzles)
+      .where(eq(dailyPuzzles.date, date));
+
+    if (existingPuzzle) {
+      // Return puzzle events from stored names and years
+      return [
+        { id: 1, name: existingPuzzle.event1Name, year: existingPuzzle.event1Year },
+        { id: 2, name: existingPuzzle.event2Name, year: existingPuzzle.event2Year },
+        { id: 3, name: existingPuzzle.event3Name, year: existingPuzzle.event3Year },
+        { id: 4, name: existingPuzzle.event4Name, year: existingPuzzle.event4Year },
+        { id: 5, name: existingPuzzle.event5Name, year: existingPuzzle.event5Year },
+        { id: 6, name: existingPuzzle.event6Name, year: existingPuzzle.event6Year },
+      ] as Event[];
+    }
+
+    // Generate new random puzzle only if no existing puzzle
     const allEvents = await this.getAllEvents();
-    
-    // Enhanced selection with diversity requirements
     const selectedEvents = this.selectDiverseEvents(allEvents, date);
     
-    // Cache the puzzle
-    const eventIds = selectedEvents.map(e => e.id);
-    const correctOrder = selectedEvents
-      .map((event, index) => ({ event, index }))
-      .sort((a, b) => a.event.year - b.event.year)
-      .map(item => item.index);
-    
-    const puzzleId = this.dateToSeed(date);
-    
+    // Store puzzle in new simplified format
     await db.insert(dailyPuzzles).values({
       date,
-      eventIds,
-      correctOrder,
-      puzzleId
+      event1Name: selectedEvents[0].name,
+      event1Year: selectedEvents[0].year,
+      event2Name: selectedEvents[1].name,
+      event2Year: selectedEvents[1].year,
+      event3Name: selectedEvents[2].name,
+      event3Year: selectedEvents[2].year,
+      event4Name: selectedEvents[3].name,
+      event4Year: selectedEvents[3].year,
+      event5Name: selectedEvents[4].name,
+      event5Year: selectedEvents[4].year,
+      event6Name: selectedEvents[5].name,
+      event6Year: selectedEvents[5].year,
+      isScheduled: false,
     });
     
-    // Update usage counts
-    await Promise.all(
-      eventIds.map(id => 
-        db.update(events)
-          .set({ usedInPuzzlesCount: sql`${events.usedInPuzzlesCount} + 1` })
-          .where(eq(events.id, id))
-      )
-    );
-    
     return selectedEvents;
+  }
+
+  async createDailyPuzzle(date: string, events: Event[], title?: string, description?: string): Promise<DailyPuzzle> {
+    const [newPuzzle] = await db
+      .insert(dailyPuzzles)
+      .values({
+        date,
+        title,
+        description,
+        event1Name: events[0].name,
+        event1Year: events[0].year,
+        event2Name: events[1].name,
+        event2Year: events[1].year,
+        event3Name: events[2].name,
+        event3Year: events[2].year,
+        event4Name: events[3].name,
+        event4Year: events[3].year,
+        event5Name: events[4].name,
+        event5Year: events[4].year,
+        event6Name: events[5].name,
+        event6Year: events[5].year,
+        isScheduled: !!title,
+      })
+      .returning();
+    
+    return newPuzzle;
+  }
+
+  async getDailyPuzzlesForAdmin(): Promise<DailyPuzzle[]> {
+    return db
+      .select()
+      .from(dailyPuzzles)
+      .orderBy(dailyPuzzles.date);
+  }
+
+  async updateDailyPuzzle(id: number, events: Event[], title?: string, description?: string): Promise<DailyPuzzle> {
+    const [updatedPuzzle] = await db
+      .update(dailyPuzzles)
+      .set({
+        title,
+        description,
+        event1Name: events[0].name,
+        event1Year: events[0].year,
+        event2Name: events[1].name,
+        event2Year: events[1].year,
+        event3Name: events[2].name,
+        event3Year: events[2].year,
+        event4Name: events[3].name,
+        event4Year: events[3].year,
+        event5Name: events[4].name,
+        event5Year: events[4].year,
+        event6Name: events[5].name,
+        event6Year: events[5].year,
+        isScheduled: !!title,
+      })
+      .where(eq(dailyPuzzles.id, id))
+      .returning();
+    
+    return updatedPuzzle;
+  }
+
+  async deleteDailyPuzzle(id: number): Promise<void> {
+    await db
+      .delete(dailyPuzzles)
+      .where(eq(dailyPuzzles.id, id));
   }
 
   private dateToSeed(dateString: string): number {
