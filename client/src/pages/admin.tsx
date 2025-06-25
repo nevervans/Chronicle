@@ -145,23 +145,42 @@ export default function Admin() {
     }
   };
 
-  const handleEdit = (puzzle: ScheduledPuzzle) => {
+  const handleEdit = (puzzle: DailyPuzzle) => {
     setEditingPuzzle(puzzle);
     setSelectedDate(puzzle.date);
-    setSelectedEvents(puzzle.eventIds);
+    // Convert puzzle events back to selected event IDs
+    const puzzleEvents = [
+      { name: puzzle.event1Name, year: puzzle.event1Year },
+      { name: puzzle.event2Name, year: puzzle.event2Year },
+      { name: puzzle.event3Name, year: puzzle.event3Year },
+      { name: puzzle.event4Name, year: puzzle.event4Year },
+      { name: puzzle.event5Name, year: puzzle.event5Year },
+      { name: puzzle.event6Name, year: puzzle.event6Year },
+    ];
+    const eventIds = puzzleEvents.map(puzzleEvent => 
+      events.find(e => e.name === puzzleEvent.name && e.year === puzzleEvent.year)?.id
+    ).filter(Boolean) as number[];
+    setSelectedEvents(eventIds);
     setPuzzleTitle(puzzle.title || "");
     setPuzzleSubtitle(puzzle.subtitle || "");
     setPuzzleDescription(puzzle.description || "");
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this scheduled puzzle?")) {
+    if (confirm("Are you sure you want to delete this puzzle?")) {
       deletePuzzleMutation.mutate(id);
     }
   };
 
-  const getEventsByIds = (eventIds: number[]) => {
-    return eventIds.map(id => events.find(e => e.id === id)).filter(Boolean) as Event[];
+  const getPuzzleEvents = (puzzle: DailyPuzzle) => {
+    return [
+      { name: puzzle.event1Name, year: puzzle.event1Year },
+      { name: puzzle.event2Name, year: puzzle.event2Year },
+      { name: puzzle.event3Name, year: puzzle.event3Year },
+      { name: puzzle.event4Name, year: puzzle.event4Year },
+      { name: puzzle.event5Name, year: puzzle.event5Year },
+      { name: puzzle.event6Name, year: puzzle.event6Year },
+    ];
   };
 
   return (
@@ -204,6 +223,22 @@ export default function Admin() {
                     value={puzzleTitle}
                     onChange={(e) => setPuzzleTitle(e.target.value)}
                     placeholder="e.g., World War II Timeline"
+                    className="w-full p-3 rounded-lg border"
+                    style={{ 
+                      backgroundColor: 'var(--bg-tertiary)', 
+                      borderColor: 'var(--bg-tertiary)',
+                      color: 'var(--text-primary)'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Subtitle (Optional)</label>
+                  <input
+                    type="text"
+                    value={puzzleSubtitle}
+                    onChange={(e) => setPuzzleSubtitle(e.target.value)}
+                    placeholder="e.g., Arrange these pivotal moments from the Pacific Theater"
                     className="w-full p-3 rounded-lg border"
                     style={{ 
                       backgroundColor: 'var(--bg-tertiary)', 
@@ -297,6 +332,7 @@ export default function Admin() {
                         <div>
                           <h3 className="font-medium" style={{ color: 'var(--accent-gold)' }}>{puzzle.date}</h3>
                           {puzzle.title && <p className="text-sm font-medium">{puzzle.title}</p>}
+                          {puzzle.subtitle && <p className="text-sm italic" style={{ color: 'var(--accent-gold)' }}>{puzzle.subtitle}</p>}
                           {puzzle.description && <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{puzzle.description}</p>}
                         </div>
                         <div className="flex space-x-2">
@@ -318,8 +354,8 @@ export default function Admin() {
                       </div>
                       
                       <div className="space-y-1">
-                        {getEventsByIds(puzzle.eventIds).map(event => (
-                          <div key={event.id} className="text-sm flex justify-between">
+                        {getPuzzleEvents(puzzle).map((event, index) => (
+                          <div key={index} className="text-sm flex justify-between">
                             <span>{event.name}</span>
                             <span style={{ color: 'var(--text-secondary)' }}>{event.year}</span>
                           </div>
