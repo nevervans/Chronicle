@@ -32,11 +32,25 @@ export default function Home() {
           </h1>
         </div>
 
-        {/* Description */}
+        {/* Title */}
+        {dailyEvents?.title && (
+          <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+            <h2 className="font-heading text-4xl font-bold" style={{ color: 'var(--accent-gold)' }}>
+              {dailyEvents.title}
+            </h2>
+          </div>
+        )}
+
+        {/* Subtitle/Description */}
         <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <p className="font-heading text-2xl leading-tight" style={{ color: 'var(--text-primary)' }}>
             {dailyEvents?.subtitle || "Arrange 6 historical events in chronological order"}
           </p>
+          {dailyEvents?.description && (
+            <p className="font-body text-lg mt-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {dailyEvents.description}
+            </p>
+          )}
         </div>
 
         {/* Date Info */}

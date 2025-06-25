@@ -67,7 +67,9 @@ export const dailyEventsResponseSchema = z.object({
     year: z.number()
   })),
   date: z.string(),
-  subtitle: z.string().optional()
+  title: z.string().optional(),
+  subtitle: z.string().optional(),
+  description: z.string().optional()
 });
 
 export type DailyEventsResponse = z.infer<typeof dailyEventsResponseSchema>;

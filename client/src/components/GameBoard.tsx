@@ -34,11 +34,15 @@ export function GameBoard() {
   const [gameAlreadyCompleted, setGameAlreadyCompleted] = useState(false);
   const [todaysResult, setTodaysResult] = useState<{ won: boolean; attempts: number } | null>(null);
 
-  // Fetch daily events
-  const { data: dailyEvents, isLoading } = useQuery({
-    queryKey: ['/api/events/daily'],
-    select: (data: any) => data.events as GameEvent[]
+  // Fetch daily events with metadata
+  const { data: dailyEventsData, isLoading } = useQuery({
+    queryKey: ['/api/events/daily']
   });
+
+  const dailyEvents = dailyEventsData?.events as GameEvent[];
+  const puzzleTitle = dailyEventsData?.title;
+  const puzzleSubtitle = dailyEventsData?.subtitle;
+  const puzzleDescription = dailyEventsData?.description;
 
   const handleDragStart = (e: React.DragEvent, event: GameEvent, sourceIndex: number) => {
     setDraggedItem({ event, sourceIndex });
@@ -211,6 +215,21 @@ export function GameBoard() {
       </header>
 
       <main className="max-w-[600px] mx-auto px-6 py-12">
+        {/* Puzzle Title and Description */}
+        {(puzzleTitle || puzzleDescription) && (
+          <div className="text-center mb-8">
+            {puzzleTitle && (
+              <h2 className="font-heading text-3xl font-bold mb-3" style={{ color: 'var(--accent-gold)' }}>
+                {puzzleTitle}
+              </h2>
+            )}
+            {puzzleDescription && (
+              <p className="font-body text-lg leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {puzzleDescription}
+              </p>
+            )}
+          </div>
+        )}
         {gameAlreadyCompleted && todaysResult ? (
           <div className="text-center py-16">
             <div className="mb-8">

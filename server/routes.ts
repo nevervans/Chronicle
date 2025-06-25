@@ -8,7 +8,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/events/daily", async (req, res) => {
     try {
       const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const { events, subtitle } = await storage.getDailyEventsWithSubtitle(date);
+      const { events, title, subtitle, description } = await storage.getDailyEventsWithSubtitle(date);
       
       const response = {
         events: events.map(event => ({
@@ -16,7 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           year: event.year
         })),
         date,
-        subtitle
+        title,
+        subtitle,
+        description
       };
 
       // Validate response

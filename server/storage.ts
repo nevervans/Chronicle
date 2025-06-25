@@ -6,7 +6,7 @@ import eventsData from "./data/events.json";
 export interface IStorage {
   getAllEvents(): Promise<Event[]>;
   getDailyEvents(date: string): Promise<Event[]>;
-  getDailyEventsWithSubtitle(date: string): Promise<{ events: Event[], subtitle?: string }>;
+  getDailyEventsWithSubtitle(date: string): Promise<{ events: Event[], title?: string, subtitle?: string, description?: string }>;
   initializeEvents(): Promise<void>;
   generateDailyPuzzle(date: string): Promise<Event[]>;
   createDailyPuzzle(date: string, events: Event[], title?: string, description?: string, subtitle?: string): Promise<DailyPuzzle>;
@@ -65,7 +65,9 @@ export class DatabaseStorage implements IStorage {
       
       return {
         events,
-        subtitle: existingPuzzle.subtitle || undefined
+        title: existingPuzzle.title || undefined,
+        subtitle: existingPuzzle.subtitle || undefined,
+        description: existingPuzzle.description || undefined
       };
     }
 
