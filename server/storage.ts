@@ -124,6 +124,7 @@ export class DatabaseStorage implements IStorage {
       .values({
         date,
         title,
+        subtitle,
         description,
         event1Name: events[0].name,
         event1Year: events[0].year,
@@ -156,6 +157,7 @@ export class DatabaseStorage implements IStorage {
       .update(dailyPuzzles)
       .set({
         title,
+        subtitle,
         description,
         event1Name: events[0].name,
         event1Year: events[0].year,

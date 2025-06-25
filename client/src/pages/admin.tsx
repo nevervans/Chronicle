@@ -33,6 +33,7 @@ export default function Admin() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [puzzleTitle, setPuzzleTitle] = useState("");
+  const [puzzleSubtitle, setPuzzleSubtitle] = useState("");
   const [puzzleDescription, setPuzzleDescription] = useState("");
   const [editingPuzzle, setEditingPuzzle] = useState<DailyPuzzle | null>(null);
 
@@ -53,8 +54,8 @@ export default function Admin() {
 
   // Create puzzle mutation
   const createPuzzleMutation = useMutation({
-    mutationFn: async (data: { date: string; eventIds: number[]; title?: string; description?: string }) => {
-      const response = await fetch("/api/admin/scheduled-puzzles", {
+    mutationFn: async (data: { date: string; events: Event[]; title?: string; subtitle?: string; description?: string }) => {
+      const response = await fetch("/api/admin/puzzles", {
         method: "POST",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" }
@@ -63,15 +64,15 @@ export default function Admin() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/scheduled-puzzles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/puzzles"] });
       resetForm();
     }
   });
 
   // Update puzzle mutation
   const updatePuzzleMutation = useMutation({
-    mutationFn: async ({ id, ...data }: { id: number; eventIds: number[]; title?: string; description?: string }) => {
-      const response = await fetch(`/api/admin/scheduled-puzzles/${id}`, {
+    mutationFn: async ({ id, ...data }: { id: number; events: Event[]; title?: string; subtitle?: string; description?: string }) => {
+      const response = await fetch(`/api/admin/puzzles/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" }
@@ -80,7 +81,7 @@ export default function Admin() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/scheduled-puzzles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/puzzles"] });
       resetForm();
     }
   });
@@ -88,14 +89,14 @@ export default function Admin() {
   // Delete puzzle mutation
   const deletePuzzleMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/admin/scheduled-puzzles/${id}`, {
+      const response = await fetch(`/api/admin/puzzles/${id}`, {
         method: "DELETE"
       });
       if (!response.ok) throw new Error('Failed to delete puzzle');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/scheduled-puzzles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/puzzles"] });
     }
   });
 
@@ -103,6 +104,7 @@ export default function Admin() {
     setSelectedDate(new Date().toISOString().split('T')[0]);
     setSelectedEvents([]);
     setPuzzleTitle("");
+    setPuzzleSubtitle("");
     setPuzzleDescription("");
     setEditingPuzzle(null);
   };
@@ -126,10 +128,13 @@ export default function Admin() {
       return;
     }
 
+    const selectedEventObjects = selectedEvents.map(id => events.find(e => e.id === id)).filter(Boolean) as Event[];
+    
     const data = {
       date: selectedDate,
-      eventIds: selectedEvents,
+      events: selectedEventObjects,
       title: puzzleTitle || undefined,
+      subtitle: puzzleSubtitle || undefined,
       description: puzzleDescription || undefined
     };
 
@@ -145,6 +150,7 @@ export default function Admin() {
     setSelectedDate(puzzle.date);
     setSelectedEvents(puzzle.eventIds);
     setPuzzleTitle(puzzle.title || "");
+    setPuzzleSubtitle(puzzle.subtitle || "");
     setPuzzleDescription(puzzle.description || "");
   };
 

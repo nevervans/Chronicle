@@ -1,6 +1,11 @@
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { DailyEventsResponse } from "@shared/schema";
 
 export default function Home() {
+  const { data: dailyEvents } = useQuery<DailyEventsResponse>({
+    queryKey: ["/api/events/daily"],
+  });
   const today = new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
@@ -30,7 +35,7 @@ export default function Home() {
         {/* Description */}
         <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <p className="font-heading text-2xl leading-tight" style={{ color: 'var(--text-primary)' }}>
-            Arrange 6 historical events in chronological order
+            {dailyEvents?.subtitle || "Arrange 6 historical events in chronological order"}
           </p>
         </div>
 
