@@ -8,14 +8,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/events/daily", async (req, res) => {
     try {
       const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const events = await storage.getDailyEvents(date);
+      const { events, subtitle } = await storage.getDailyEventsWithSubtitle(date);
       
       const response = {
         events: events.map(event => ({
           name: event.name,
           year: event.year
         })),
-        date
+        date,
+        subtitle
       };
 
       // Validate response
@@ -86,13 +87,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/puzzles", async (req, res) => {
     try {
-      const { date, events, title, description } = req.body;
+      const { date, events, title, subtitle, description } = req.body;
       
       if (!date || !events || !Array.isArray(events) || events.length !== 6) {
         return res.status(400).json({ error: "Date and exactly 6 events are required" });
       }
 
-      const puzzle = await storage.createDailyPuzzle(date, events, title, description);
+      const puzzle = await storage.createDailyPuzzle(date, events, title, description, subtitle);
       res.json({ puzzle });
     } catch (error) {
       console.error("Error creating puzzle:", error);
@@ -103,13 +104,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/puzzles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { events, title, description } = req.body;
+      const { events, title, subtitle, description } = req.body;
       
       if (!events || !Array.isArray(events) || events.length !== 6) {
         return res.status(400).json({ error: "Exactly 6 events are required" });
       }
 
-      const puzzle = await storage.updateDailyPuzzle(id, events, title, description);
+      const puzzle = await storage.updateDailyPuzzle(id, events, title, description, subtitle);
       res.json({ puzzle });
     } catch (error) {
       console.error("Error updating puzzle:", error);

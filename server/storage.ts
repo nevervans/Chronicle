@@ -6,11 +6,12 @@ import eventsData from "./data/events.json";
 export interface IStorage {
   getAllEvents(): Promise<Event[]>;
   getDailyEvents(date: string): Promise<Event[]>;
+  getDailyEventsWithSubtitle(date: string): Promise<{ events: Event[], subtitle?: string }>;
   initializeEvents(): Promise<void>;
   generateDailyPuzzle(date: string): Promise<Event[]>;
-  createDailyPuzzle(date: string, events: Event[], title?: string, description?: string): Promise<DailyPuzzle>;
+  createDailyPuzzle(date: string, events: Event[], title?: string, description?: string, subtitle?: string): Promise<DailyPuzzle>;
   getDailyPuzzlesForAdmin(): Promise<DailyPuzzle[]>;
-  updateDailyPuzzle(id: number, events: Event[], title?: string, description?: string): Promise<DailyPuzzle>;
+  updateDailyPuzzle(id: number, events: Event[], title?: string, description?: string, subtitle?: string): Promise<DailyPuzzle>;
   deleteDailyPuzzle(id: number): Promise<void>;
 }
 
@@ -42,6 +43,35 @@ export class DatabaseStorage implements IStorage {
 
   async getDailyEvents(date: string): Promise<Event[]> {
     return await this.generateDailyPuzzle(date);
+  }
+
+  async getDailyEventsWithSubtitle(date: string): Promise<{ events: Event[], subtitle?: string }> {
+    // Check if we already have a puzzle for this date
+    const [existingPuzzle] = await db
+      .select()
+      .from(dailyPuzzles)
+      .where(eq(dailyPuzzles.date, date));
+
+    if (existingPuzzle) {
+      // Return puzzle events from stored names and years along with subtitle
+      const events = [
+        { id: 1, name: existingPuzzle.event1Name, year: existingPuzzle.event1Year },
+        { id: 2, name: existingPuzzle.event2Name, year: existingPuzzle.event2Year },
+        { id: 3, name: existingPuzzle.event3Name, year: existingPuzzle.event3Year },
+        { id: 4, name: existingPuzzle.event4Name, year: existingPuzzle.event4Year },
+        { id: 5, name: existingPuzzle.event5Name, year: existingPuzzle.event5Year },
+        { id: 6, name: existingPuzzle.event6Name, year: existingPuzzle.event6Year },
+      ] as Event[];
+      
+      return {
+        events,
+        subtitle: existingPuzzle.subtitle || undefined
+      };
+    }
+
+    // Generate new random puzzle - no subtitle for random puzzles
+    const events = await this.generateDailyPuzzle(date);
+    return { events };
   }
 
   async generateDailyPuzzle(date: string): Promise<Event[]> {
@@ -88,7 +118,7 @@ export class DatabaseStorage implements IStorage {
     return selectedEvents;
   }
 
-  async createDailyPuzzle(date: string, events: Event[], title?: string, description?: string): Promise<DailyPuzzle> {
+  async createDailyPuzzle(date: string, events: Event[], title?: string, description?: string, subtitle?: string): Promise<DailyPuzzle> {
     const [newPuzzle] = await db
       .insert(dailyPuzzles)
       .values({
@@ -121,7 +151,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(dailyPuzzles.date);
   }
 
-  async updateDailyPuzzle(id: number, events: Event[], title?: string, description?: string): Promise<DailyPuzzle> {
+  async updateDailyPuzzle(id: number, events: Event[], title?: string, description?: string, subtitle?: string): Promise<DailyPuzzle> {
     const [updatedPuzzle] = await db
       .update(dailyPuzzles)
       .set({

@@ -19,6 +19,7 @@ export const dailyPuzzles = pgTable("daily_puzzles", {
   id: serial("id").primaryKey(),
   date: text("date").notNull().unique(),
   title: text("title"),
+  subtitle: text("subtitle"),
   description: text("description"),
   event1Name: text("event1_name").notNull(),
   event1Year: integer("event1_year").notNull(),
@@ -65,7 +66,8 @@ export const dailyEventsResponseSchema = z.object({
     name: z.string(),
     year: z.number()
   })),
-  date: z.string()
+  date: z.string(),
+  subtitle: z.string().optional()
 });
 
 export type DailyEventsResponse = z.infer<typeof dailyEventsResponseSchema>;
