@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  chronicle-app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://chronicle_user:chronicle_pass@chronicle-db:5432/chronicle_db
+      - PORT=5000
+    depends_on:
+      chronicle-db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  chronicle-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=chronicle_user
+      - POSTGRES_PASSWORD=chronicle_pass
+      - POSTGRES_DB=chronicle_db
+    volumes:
+      - chronicle_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chronicle_user -d chronicle_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  chronicle_postgres_data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

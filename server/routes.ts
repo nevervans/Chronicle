@@ -4,6 +4,15 @@ import { storage } from "./storage";
 import { dailyEventsResponseSchema, gameResultSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Health check endpoint for deployment monitoring
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  });
   // Get today's daily events
   app.get("/api/events/daily", async (req, res) => {
     try {
