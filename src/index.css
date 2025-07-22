@@ -2,9 +2,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-.__test {
-  @apply border-border;
-}
 
 :root {
   --background: #1A1A1D;
