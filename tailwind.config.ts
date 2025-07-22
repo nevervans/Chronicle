@@ -52,7 +52,7 @@ export default {
           "5": "var(--chart-5)",
         },
         borderColor: {
-        border: "var(--border)", 
+          border: "var(--border)", 
         },
         sidebar: {
           DEFAULT: "var(--sidebar-background)",
